@@ -28,13 +28,14 @@ build: servers $(kernel_elf)
 arch_obj := $(BUILD_DIR)/kernel/$(ARCH).o
 
 # object files required to build the kernel
-objs := $(addprefix $(BUILD_DIR)/kernel/, kernel.o common.o buffer.o list.o module.o vm.o task.o memory.o) \
-		$(addprefix $(BUILD_DIR)/servers/shell/, main.o) \
+objs := $(addprefix $(BUILD_DIR)/kernel/, kernel.o common.o buffer.o list.o module.o vm.o task.o memory.o ipc.o) \
 		$(arch_obj)
 
 # rules for building kernel
 linker_script := $(BUILD_DIR)/kernel/kernel.ld
 $(kernel_elf): OBJS := $(objs)
+$(kernel_elf): OBJS += $(addprefix $(BUILD_DIR)/servers/, shell/main.o vm/main.o)
+
 $(kernel_elf): LDFLAGS := -T$(linker_script)
 $(kernel_elf): $(objs) $(linker_script)
 	$(LD) $(LDFLAGS) -Map $(@:.elf=.map) -o $@ $(OBJS)
@@ -63,11 +64,15 @@ hello: $(lib)
 	build_dir=$(BUILD_DIR)/servers/hello lib=$(lib) include=$(TOP_DIR) make build -C servers/hello
 
 .PHONY: shell
-shell:	hello $(lib)
+shell: $(lib)
 	build_dir=$(BUILD_DIR)/servers/shell lib=$(lib) include=$(TOP_DIR) make build -C servers/shell
 
+.PHONY: vm
+vm:	hello $(lib)
+	build_dir=$(BUILD_DIR)/servers/vm lib=$(lib) include=$(TOP_DIR) make build -C servers/vm
+
 .PHONY: servers
-servers: hello shell
+servers: hello shell vm
 
 # run qemu
 .PHONY: run

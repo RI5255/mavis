@@ -1,7 +1,9 @@
 #include "vm.h"
 #include "arch.h"
+#include "ipc.h"
 #include "memory.h"
 #include "common.h"
+#include "message.h"
 #include "module.h"
 #include "task.h"
 #include <stdint.h>
@@ -765,15 +767,22 @@ int32_t invoke_external(struct context *ctx, struct wasm_func *f) {
         if(strcmp(f->name, "task_exit") == 0) {
             task_exit(f->locals[0]->val);
         }
-        if(strcmp(f->name, "exec_vm_task") == 0) {
-            // todo: fix this
-            exec_vm_task(ctx->mem->p + f->locals[0]->val, f->locals[1]->val);
+        if(strcmp(f->name, "vm_create") == 0) {
+            return vm_create(ctx->mem->p + f->locals[0]->val, f->locals[1]->val);
         }
         if(strcmp(f->name, "arch_serial_write") == 0) {
             arch_serial_write(f->locals[0]->val);
         }
         if(strcmp(f->name, "arch_serial_read") == 0) {
             return arch_serial_read();
+        }
+        if(strcmp(f->name, "ipc_send") == 0) {
+            struct message *msg = (struct message *)(ctx->mem->p + f->locals[1]->val);
+            return ipc_send(f->locals[0]->val, msg);
+        }
+        if(strcmp(f->name, "ipc_receive") == 0) {
+            struct message *msg = (struct message *)(ctx->mem->p + f->locals[1]->val);
+            return ipc_receive(f->locals[0]->val, msg);
         }
     }
 

@@ -1,9 +1,7 @@
 #include <lib/stdio.h>
 #include <lib/string.h>
 #include <lib/env.h>
-
-extern char __hello_start[];
-extern int __hello_size[];
+#include <kernel/message.h>
 
 int main(void) {
      while (1) {
@@ -25,8 +23,26 @@ int main(void) {
         }
         
         if (strcmp(cmdline, "hello") == 0) {
-            exec_vm_task(__hello_start, __hello_size[0]);
+            struct message msg = {
+                .type = SPAWN_TASK_MSG,
+                .spawn_task = {.name = "hello"}
+            };
+
+            // todo: err handling
+            // todo: impl call function
+            ipc_send(3, &msg);
+
+            ipc_receive(3, &msg);
+            int new_task = msg.spawn_task.tid;
+
+            // wait for end
+            for(;;) {
+                ipc_receive(3, &msg);
+                if(msg.type == DESTROY_TASK_MSG && msg.destroy_task.tid == new_task)
+                    break;
+            }
         }
+
         else if (strcmp(cmdline, "exit") == 0)
             break;
         else

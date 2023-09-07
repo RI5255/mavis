@@ -6,11 +6,12 @@
 #include "memory.h"
 #include "buffer.h"
 #include "vm.h"
+#include "message.h"
 
 #define NUM_TASK_MAX    8
 #define TASK_UNUSED     0
 #define TASK_RUNNABLE   1
-#define TASK_EXITED     2
+#define TASK_BLOCKED    2
 
 typedef int         tid_t;
 
@@ -23,9 +24,14 @@ struct task {
     void                *page_top;
 
     list_elem_t         next;
+
+    struct message_box  message_box;
 };
 
-struct task *task_create(uint32_t ip, uint32_t *arg);
-void exec_vm_task(void *image, int size);
+void task_init(void);
+int task_create(uint32_t ip, uint32_t *arg);
+int vm_create(void *image, int size);
 void task_switch(void);
+void task_resume(struct task *task);
+void task_block(struct task *task);
 void task_exit(int32_t code);
