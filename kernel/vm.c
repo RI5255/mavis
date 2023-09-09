@@ -784,6 +784,10 @@ int32_t invoke_external(struct context *ctx, struct wasm_func *f) {
             struct message *msg = (struct message *)(ctx->mem->p + f->locals[1]->val);
             return ipc_receive(f->locals[0]->val, msg);
         }
+        if(strcmp(f->name, "ipc_call") == 0) {
+            struct message *msg = (struct message *)(ctx->mem->p + f->locals[1]->val);
+            return ipc_call(f->locals[0]->val, msg);
+        }
     }
 
     return 0;

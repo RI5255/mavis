@@ -39,3 +39,9 @@ int ipc_receive(tid_t src_tid, struct message *msg) {
 
     return 0;
 }
+
+int ipc_call(tid_t dst_tid, struct message *msg) {
+    ipc_send(dst_tid, msg);
+    ipc_receive(dst_tid, msg);
+    return 0;
+}

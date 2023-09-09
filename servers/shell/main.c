@@ -29,10 +29,7 @@ int main(void) {
             };
 
             // todo: err handling
-            // todo: impl call function
-            ipc_send(3, &msg);
-
-            ipc_receive(3, &msg);
+            ipc_call(3, &msg);
             int new_task = msg.spawn_task.tid;
 
             // wait for end
