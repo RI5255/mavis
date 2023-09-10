@@ -37,4 +37,5 @@ int vm_create(const char *name, void *image, int size);
 void task_switch(void);
 void task_resume(struct task *task);
 void task_block(struct task *task);
+int task_lookup(const char *name);
 void task_exit(int32_t code);

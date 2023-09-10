@@ -127,6 +127,15 @@ void task_switch(void) {
     arch_task_switch(prev, next);
 }
 
+int task_lookup(const char *name) {
+    LIST_FOR_EACH(task, &runqueue, struct task, next) {
+        if(strcmp(name, task->name) == 0)
+            return task->tid;
+    }
+
+    return 0;
+}
+
 __attribute__((noreturn))
 void task_exit(int32_t code) {
     // free memories
