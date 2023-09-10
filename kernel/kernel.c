@@ -18,10 +18,10 @@ void kernel_main(void) {
     task_init();
     
     // create shell server(tid=2)
-    vm_create(__shell_start, __shell_size[0]);
+    vm_create("shell", __shell_start, __shell_size[0]);
 
     // create vm server(tid=3)
-    vm_create(__vm_start, __vm_size[0]);
+    vm_create("vm", __vm_start, __vm_size[0]);
     
     task_switch();
     

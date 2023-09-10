@@ -787,7 +787,10 @@ int32_t invoke_external(struct context *ctx, struct wasm_func *f) {
             task_exit(f->locals[0]->val);
         }
         if(strcmp(f->name, "vm_create") == 0) {
-            return vm_create(ctx->mem->p + f->locals[0]->val, f->locals[1]->val);
+            const char *name    = (char *)ctx->mem->p + f->locals[0]->val;
+            void *image         = ctx->mem->p + f->locals[1]->val;
+            int   size          = f->locals[2]->val;
+            return vm_create(name, image, size);
         }
         if(strcmp(f->name, "arch_serial_write") == 0) {
             arch_serial_write(f->locals[0]->val);

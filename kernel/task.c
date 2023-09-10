@@ -26,7 +26,7 @@ static int alloc_tid(void) {
     return 0;
 }
 
-static void init_task_struct(struct task *task, int tid, uint32_t ip, uint32_t *arg) {
+static void init_task_struct(struct task *task, const char *name, int tid, uint32_t ip, uint32_t *arg) {
     // init message_box
     task->message_box.has_message = false;
 
@@ -41,6 +41,9 @@ static void init_task_struct(struct task *task, int tid, uint32_t ip, uint32_t *
     // init stack
     arch_task_init(task, ip, arg);
 
+    // set task name
+    memcpy(task->name, name, TASK_NAME_LEN);
+
     // set tid
     task->tid = tid;
 }
@@ -54,7 +57,7 @@ void task_block(struct task *task) {
     task->state = TASK_BLOCKED;
 }
 
-int task_create(uint32_t ip, uint32_t *arg) {
+int task_create(const char *name, uint32_t ip, uint32_t *arg) {
     // alloc tid
     int tid = alloc_tid();
     if(!tid) {
@@ -64,7 +67,7 @@ int task_create(uint32_t ip, uint32_t *arg) {
 
     // init task struct
     struct task *task = &tasks[tid - 1];
-    init_task_struct(task, tid, ip, arg);
+    init_task_struct(task, name, tid, ip, arg);
 
     // push to runqueue
     task_resume(task);
@@ -80,9 +83,9 @@ static void launch_vm_task(struct buffer *buf) {
     run_vm(ctx);
 }
 
-int vm_create(void *image, int size) {
+int vm_create(const char *name, void *image, int size) {
     struct buffer *buf = newbuffer(image, size);
-    return task_create((uint32_t)launch_vm_task, (uint32_t *)buf);
+    return task_create(name, (uint32_t)launch_vm_task, (uint32_t *)buf);
 }
 
 struct task *current_task;
@@ -104,7 +107,7 @@ void task_init(void) {
     int tid = alloc_tid();
 
     struct task *idle_task = &tasks[tid - 1];
-    init_task_struct(idle_task, -1, 0, NULL);
+    init_task_struct(idle_task,"idle", -1, 0, NULL);
 
     task_resume(idle_task);
 

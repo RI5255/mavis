@@ -12,12 +12,15 @@
 #define TASK_UNUSED     0
 #define TASK_RUNNABLE   1
 #define TASK_BLOCKED    2
+#define TASK_NAME_LEN   16
 
 typedef int         tid_t;
 
 struct task {
     tid_t               tid;
     int                 state;
+    char                name[TASK_NAME_LEN];
+
     struct arch_task    arch;
     struct malloc_pool  malloc_pool;
     
@@ -29,8 +32,8 @@ struct task {
 };
 
 void task_init(void);
-int task_create(uint32_t ip, uint32_t *arg);
-int vm_create(void *image, int size);
+int task_create(const char *name, uint32_t ip, uint32_t *arg);
+int vm_create(const char *name, void *image, int size);
 void task_switch(void);
 void task_resume(struct task *task);
 void task_block(struct task *task);

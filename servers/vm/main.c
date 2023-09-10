@@ -21,7 +21,7 @@ int main(void) {
                     
                     // create hello world task
                     puts("[vm] launching hello...");
-                    int tid = vm_create(__hello_start, __hello_size[0]);
+                    int tid = vm_create("hello", __hello_start, __hello_size[0]);
 
                     msg = (struct message ) {
                         .type = SPAWN_TASK_REPLY_MSG,

@@ -28,7 +28,7 @@ __attribute__((
     __import_module__("env"),
     __import_name__("vm_create"),
 ))
-int vm_create(void *image, int size);
+int vm_create(const char *name, void *image, int size);
 
 __attribute__((
     __import_module__("env"),
