@@ -1,11 +1,13 @@
 #include "vm.h"
 #include "arch.h"
+#include "buffer.h"
 #include "ipc.h"
 #include "memory.h"
 #include "common.h"
 #include "message.h"
 #include "module.h"
 #include "task.h"
+#include <stdatomic.h>
 #include <stdint.h>
 
 struct local_variable *create_local_variable(valtype ty) {
@@ -213,6 +215,14 @@ static void print_instr(instr *i) {
             );
             break;
 
+        case BrTable:
+            printf("br_table ");
+            for(int j = 0; j < i->br_table.n; j++) {
+                printf("%d ", i->br_table.labels[j]);
+            }
+            printf("%d\n", i->br_table.default_l);
+            break;
+        
         case Return:
             puts("return");
             break;
@@ -416,6 +426,15 @@ instr *invoke_i(struct context *ctx, instr *ip) {
             int32_t cond = readi32(ctx->stack);
             if(cond)
                 next_ip = branch_in(ctx, ip->br.l);
+            break;
+        }
+
+        case BrTable: {
+            int32_t idx = readi32(ctx->stack);
+            if(idx < ip->br_table.n)
+                next_ip = branch_in(ctx, ip->br_table.labels[idx]);
+            else
+                next_ip = branch_in(ctx, ip->br_table.default_l);
             break;
         }
 

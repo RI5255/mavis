@@ -49,6 +49,7 @@ typedef enum {
     End         = 0x0b,
     Br          = 0x0c,
     BrIf        = 0x0d,
+    BrTable     = 0x0e,
     Return      = 0x0f,
     Call        = 0x10,
     Drop        = 0x1a,
@@ -120,6 +121,12 @@ typedef struct {
     labelidx    l;
 } br_instr;
 
+typedef struct {
+    int n;
+    labelidx    *labels;
+    labelidx    default_l;
+} br_table_instr;
+
 typedef uint32_t funcidx;
 typedef struct {
     funcidx    idx;
@@ -144,6 +151,7 @@ typedef struct {
         if_instr            If;
         block_instr         block;
         br_instr            br;
+        br_table_instr      br_table;
         call_instr          call;
     };
 } instr;

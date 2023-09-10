@@ -15,35 +15,38 @@ int main(void) {
         ipc_receive(0, &msg);
         int src = msg.src;
 
-        // todo: use switch-case (cannot use this since runtime has not support branch_table yet)
-        if(msg.type == SPAWN_TASK_MSG) {
-            if(strcmp(msg.spawn_task.name, "hello") == 0) {
-                
-                // create hello world task
-                puts("[vm] launching hello...");
-                int tid = vm_create(__hello_start, __hello_size[0]);
+        switch(msg.type) {
+            case SPAWN_TASK_MSG:
+                if(strcmp(msg.spawn_task.name, "hello") == 0) {
+                    
+                    // create hello world task
+                    puts("[vm] launching hello...");
+                    int tid = vm_create(__hello_start, __hello_size[0]);
 
-                msg = (struct message ) {
-                    .type = SPAWN_TASK_REPLY_MSG,
-                    .spawn_task = {.tid = tid}
+                    msg = (struct message ) {
+                        .type = SPAWN_TASK_REPLY_MSG,
+                        .spawn_task = {.tid = tid}
+                    };
+
+                    ipc_send(src, &msg);
+                }
+                break;
+            
+            case EXIT_TASK_MSG: {
+                int exit_task = msg.exit_task.tid;
+
+                printf("[vm] tid %d exited normally\n", exit_task);
+
+                // send message to pager task
+                // todo: fix this
+                msg = (struct message) {
+                    .type = DESTROY_TASK_MSG,
+                    .destroy_task = {.tid = exit_task}
                 };
-
-                ipc_send(src, &msg);
+                ipc_send(2, &msg);
+                break;
             }
-        }
-
-        if(msg.type == EXIT_TASK_MSG) {
-            int exit_task = msg.exit_task.tid;
-
-            printf("[vm] tid %d exited normally\n", exit_task);
-
-            // send message to pager task
-            // todo: fix this
-            msg = (struct message) {
-                .type = DESTROY_TASK_MSG,
-                .destroy_task = {.tid = exit_task}
-            };
-            ipc_send(2, &msg);
+            
         }
     }
 }

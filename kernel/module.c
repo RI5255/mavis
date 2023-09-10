@@ -89,6 +89,18 @@ instr * parse_instr(struct buffer *buf) {
             i->br.l = readu32_LEB128(buf);
             break;
         
+        case BrTable: {
+            int n = readu32_LEB128(buf);
+            
+            i->br_table.n = n;
+            i->br_table.labels = malloc(sizeof(uint32_t) * n);
+            for(int j = 0; j < n; j++)
+                i->br_table.labels[j] = readu32_LEB128(buf);
+            
+            i->br_table.default_l = readu32_LEB128(buf);
+            break;
+        }
+
         case Return:
             break;
         
