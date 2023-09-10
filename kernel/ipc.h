@@ -2,6 +2,6 @@
 
 #include "message.h"
 
-int ipc_send(int dst_tid, struct message *msg);
-int ipc_receive(int src_tid, struct message *msg);
-int ipc_call(int dst_tid, struct message *msg);
+int ipc_send(const char *name, struct message *msg);
+int ipc_receive(const char *name, struct message *msg);
+int ipc_call(const char *name, struct message *msg);

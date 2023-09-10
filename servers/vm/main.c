@@ -13,7 +13,7 @@ int main(void) {
     for(;;) {
         // receive from any server
         ipc_receive(0, &msg);
-        int src = msg.src;
+        char *src = msg.src;
 
         switch(msg.type) {
             case SPAWN_TASK_MSG:
@@ -23,10 +23,8 @@ int main(void) {
                     puts("[vm] launching hello...");
                     int tid = vm_create("hello", __hello_start, __hello_size[0]);
 
-                    msg = (struct message ) {
-                        .type = SPAWN_TASK_REPLY_MSG,
-                        .spawn_task = {.tid = tid}
-                    };
+                    msg.type = SPAWN_TASK_REPLY_MSG;
+                    msg.spawn_task.tid = tid;
 
                     ipc_send(src, &msg);
                 }
@@ -39,11 +37,10 @@ int main(void) {
 
                 // send message to pager task
                 // todo: fix this
-                msg = (struct message) {
-                    .type = DESTROY_TASK_MSG,
-                    .destroy_task = {.tid = exit_task}
-                };
-                ipc_send(2, &msg);
+                msg.type = DESTROY_TASK_MSG;
+                msg.destroy_task.tid = exit_task;
+                
+                ipc_send("shell", &msg);
                 break;
             }
             

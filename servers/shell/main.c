@@ -29,12 +29,12 @@ int main(void) {
             };
 
             // todo: err handling
-            ipc_call(3, &msg);
+            ipc_call("vm", &msg);
             int new_task = msg.spawn_task.tid;
 
             // wait for end
             for(;;) {
-                ipc_receive(3, &msg);
+                ipc_receive("vm", &msg);
                 if(msg.type == DESTROY_TASK_MSG && msg.destroy_task.tid == new_task)
                     break;
             }

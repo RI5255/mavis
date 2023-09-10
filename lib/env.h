@@ -34,16 +34,16 @@ __attribute__((
     __import_module__("env"),
     __import_name__("ipc_send"),
 ))
-int ipc_send(int dst_tid, void *msg);
+int ipc_send(const char *name, void *msg);
 
 __attribute__((
     __import_module__("env"),
     __import_name__("ipc_receive"),
 ))
-int ipc_receive(int src_tid, void *msg);
+int ipc_receive(const char *name, void *msg);
 
 __attribute__((
     __import_module__("env"),
     __import_name__("ipc_call"),
 ))
-int ipc_call(int dst_tid, void *msg);
+int ipc_call(const char *name, void *msg);

@@ -12,7 +12,7 @@ enum message_type {
 
 struct message {
     int     type;
-    int     src;
+    char    src[16];
     
     // todo: fix this
     union {

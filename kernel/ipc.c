@@ -7,11 +7,18 @@ extern struct task *current_task;
 extern struct task tasks[NUM_TASK_MAX];
 
 // todo: fix this
-int ipc_send(tid_t dst_tid, struct message *msg) {
-    struct task *dst =  &tasks[dst_tid - 1];
-    
-    msg->src = current_task->tid;
-    
+int ipc_send(const char *name, struct message *msg) {
+
+    int tid = task_lookup(name);
+
+    if(!tid) {
+        // todo: return err code
+        PANIC("%s not found", name);
+    }
+
+    struct task *dst =  &tasks[tid - 1];
+    memcpy(msg->src, current_task->name, TASK_NAME_LEN);
+
     dst->message_box.has_message = true;
     dst->message_box.message = *msg;
 
@@ -22,7 +29,8 @@ int ipc_send(tid_t dst_tid, struct message *msg) {
     return 0;
 }
 
-int ipc_receive(tid_t src_tid, struct message *msg) {
+// todo: Verify the existence of the sender.
+int ipc_receive(const char *name, struct message *msg) {
     if(current_task->message_box.has_message) {
         *msg = current_task->message_box.message;
         current_task->message_box.has_message = false;
@@ -40,8 +48,8 @@ int ipc_receive(tid_t src_tid, struct message *msg) {
     return 0;
 }
 
-int ipc_call(tid_t dst_tid, struct message *msg) {
-    ipc_send(dst_tid, msg);
-    ipc_receive(dst_tid, msg);
+int ipc_call(const char *name, struct message *msg) {
+    ipc_send(name, msg);
+    ipc_receive(name, msg);
     return 0;
 }
