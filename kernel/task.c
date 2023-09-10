@@ -128,11 +128,11 @@ void task_switch(void) {
 }
 
 int task_lookup(const char *name) {
-    LIST_FOR_EACH(task, &runqueue, struct task, next) {
+    for(int i = 0; i < NUM_TASK_MAX; i++) {
+        struct task *task = &tasks[i];
         if(strcmp(name, task->name) == 0)
             return task->tid;
     }
-
     return 0;
 }
 
@@ -149,7 +149,7 @@ void task_exit(int32_t code) {
         .type = EXIT_TASK_MSG,
         .exit_task = {.tid = current_task->tid}
     };
-    ipc_send(3, &msg);
+    ipc_send("vm", &msg);
 
     // never reach here
     PANIC("unreachable");
