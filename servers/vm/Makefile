@@ -2,7 +2,8 @@ CC 				:= clang
 WASI_SDK_CLANG	?= $(HOME)/wasi-sdk-20.0/bin/clang
 MKDIR 			?= mkdir 
 build_dir 		?=
-lib 			?=
+libc 			?=
+libc_path 		:= $(subst build/,, $(dir $(libc)))
 include 		?=
 
 hello 			:= $(build_dir)/../hello/main.o
@@ -12,9 +13,9 @@ obj 			:= $(build_dir)/main.o
 .PHONY: build
 build: $(wasm) $(obj)
 
-$(wasm): main.c $(lib)
+$(wasm): main.c
 	$(MKDIR) -p $(@D)
-	$(WASI_SDK_CLANG) -nostdlib -I$(include) $^ $(hello) -o $@
+	$(WASI_SDK_CLANG) -nostdlib -I$(libc_path) -I$(include) $^ $(libc) $(hello) -o $@
 
 $(obj): $(wasm) 
 $(obj): main.S

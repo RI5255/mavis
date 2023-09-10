@@ -1,6 +1,6 @@
-#include <lib/env.h>
-#include <lib/string.h>
-#include <lib/stdio.h>
+#include <env.h>
+#include <string.h>
+#include <stdio.h>
 #include <kernel/message.h>
 
 // todo: impl file system

@@ -54,24 +54,25 @@ $(BUILD_DIR)/kernel/kernel.ld: kernel/kernel.ld
 	$(CP) $< $@
 
 # library used by servers
-lib := $(BUILD_DIR)/lib/lib.a
-$(lib):
-	build_dir=$(BUILD_DIR)/lib make -C lib
+libc := $(BUILD_DIR)/lib/libc/libc.a
+$(libc):
+	build_dir=$(BUILD_DIR)/lib/libc make -C lib/libc
 
 # rulues for building servers
 .PHONY: hello
-hello: $(lib)
-	build_dir=$(BUILD_DIR)/servers/hello lib=$(lib) include=$(TOP_DIR) make build -C servers/hello
+hello: $(libc)
+	build_dir=$(BUILD_DIR)/servers/hello libc=$(libc) include=$(TOP_DIR) make build -C servers/hello
 
 .PHONY: shell
-shell: $(lib)
-	build_dir=$(BUILD_DIR)/servers/shell lib=$(lib) include=$(TOP_DIR) make build -C servers/shell
+shell: $(libc)
+	build_dir=$(BUILD_DIR)/servers/shell libc=$(libc) include=$(TOP_DIR) make build -C servers/shell
 
 .PHONY: vm
-vm:	hello $(lib)
-	build_dir=$(BUILD_DIR)/servers/vm lib=$(lib) include=$(TOP_DIR) make build -C servers/vm
+vm:	hello $(libc)
+	build_dir=$(BUILD_DIR)/servers/vm libc=$(libc) include=$(TOP_DIR) make build -C servers/vm
 
 .PHONY: servers
+servers: $(libc)
 servers: hello shell vm
 
 # run qemu

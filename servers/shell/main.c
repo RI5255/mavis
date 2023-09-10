@@ -1,6 +1,6 @@
-#include <lib/stdio.h>
-#include <lib/string.h>
-#include <lib/env.h>
+#include <stdio.h>
+#include <string.h>
+#include <env.h>
 #include <kernel/message.h>
 
 int main(void) {
