@@ -78,6 +78,7 @@ typedef enum {
     I32Div_s    = 0x6d,
     I32Rem_s    = 0x6f,
     I32And      = 0x71,
+    I32Or       = 0x72,
     I32Shl      = 0x74,
     I32Shr_s    = 0x75
 } op;

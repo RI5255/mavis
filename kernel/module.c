@@ -167,6 +167,7 @@ instr * parse_instr(struct buffer *buf) {
         case I32Div_s:
         case I32Rem_s:
         case I32And:
+        case I32Or:
         case I32Shl:
         case I32Shr_s:
             break;

@@ -353,6 +353,10 @@ static void print_instr(instr *i) {
             puts("i32.and");
             break;
 
+        case I32Or:
+            puts("i32.or");
+            break;
+        
         case I32Shl:
             puts("i32.shl");
             break;
@@ -632,6 +636,13 @@ instr *invoke_i(struct context *ctx, instr *ip) {
             int32_t rhs = readi32(ctx->stack);
             int32_t lhs = readi32(ctx->stack);
             writei32(ctx->stack, lhs & rhs);
+            break;
+        }
+
+        case I32Or: {
+            int32_t rhs = readi32(ctx->stack);
+            int32_t lhs = readi32(ctx->stack);
+            writei32(ctx->stack, lhs | rhs);
             break;
         }
 
