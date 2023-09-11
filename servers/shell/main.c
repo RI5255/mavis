@@ -2,6 +2,7 @@
 #include <string.h>
 #include <env.h>
 #include <kernel/message.h>
+#include <lib/common/print.h>
 
 int main(void) {
      while (1) {
@@ -11,7 +12,7 @@ int main(void) {
             char ch = getchar();
             putchar(ch);
             if (i == sizeof(cmdline) - 1) {
-                printf("command line too long\n");
+                WARN("shell", "command line too long");
                 continue;
             } else if (ch == '\r') {
                 printf("\n");
@@ -43,7 +44,7 @@ int main(void) {
         else if (strcmp(cmdline, "exit") == 0)
             break;
         else
-            printf("unknown command: %s\n", cmdline);
+            WARN("shell", "unknown command: %s", cmdline);
     }
 
     return 0;

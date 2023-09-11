@@ -1,6 +1,7 @@
 #include <env.h>
 #include <string.h>
 #include <stdio.h>
+#include <lib/common/print.h>
 #include <kernel/message.h>
 
 // todo: impl file system
@@ -20,7 +21,7 @@ int main(void) {
                 if(strcmp(msg.spawn_task.name, "hello") == 0) {
                     
                     // create hello world task
-                    puts("[vm] launching hello...");
+                    INFO("vm", "launching hello...");
                     int tid = vm_create("hello", __hello_start, __hello_size[0]);
 
                     msg.type = SPAWN_TASK_REPLY_MSG;
@@ -33,7 +34,7 @@ int main(void) {
             case EXIT_TASK_MSG: {
                 int exit_task = msg.exit_task.tid;
 
-                printf("[vm] tid %d exited normally\n", exit_task);
+                INFO("vm", "tid %d exited normally", exit_task);
 
                 // send message to pager task
                 // todo: fix this

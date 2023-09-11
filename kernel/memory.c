@@ -2,6 +2,7 @@
 #include "common.h"
 #include "list.h"
 #include "task.h"
+#include <lib/common/print.h>
 
 extern uint8_t __pmalloc_pool_start[], __pmalloc_pool_end[];
 static uint8_t *next_paddr = __pmalloc_pool_start;

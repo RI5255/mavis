@@ -3,12 +3,6 @@
 #include <stddef.h>
 #include "arch.h"
 
-#define PANIC(fmt, ...)                                                         \
-    do {                                                                        \
-        printf("PANIC %s:%d " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);     \
-        arch_idle();                                                            \
-    }while(0)
-
 #define PAGE_SIZE 4096
 
 // clang extention
@@ -22,4 +16,4 @@ int strcmp(const char *s1, const char *s2);
 void putchar(char ch);
 char getchar(void);
 void puts(const char *s);
-void printf(const char *fmt, ...);
+int printf(const char *fmt, ...);

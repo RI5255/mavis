@@ -2,6 +2,7 @@
 #include "message.h"
 #include "task.h"
 #include "common.h"
+#include <lib/common/print.h>
 
 extern struct task *current_task;
 extern struct task tasks[NUM_TASK_MAX];

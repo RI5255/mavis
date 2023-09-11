@@ -1,3 +1,4 @@
+#include <lib/common/print.h>
 #include "kernel.h"
 #include "common.h"
 #include "task.h"

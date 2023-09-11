@@ -8,6 +8,7 @@
 #include "vm.h"
 #include "list.h"
 #include "ipc.h"
+#include <lib/common/print.h>
 #include <stdint.h>
 
 struct task tasks[NUM_TASK_MAX];

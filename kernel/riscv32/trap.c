@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <kernel/common.h>
+#include <lib/common/print.h>
 
 #define READ_CSR(reg)                                                           \
     ({                                                                          \

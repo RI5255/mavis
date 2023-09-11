@@ -59,7 +59,7 @@ void puts(const char *s) {
     putchar('\n');
 }
 
-void printf(const char *fmt, ...) {
+int printf(const char *fmt, ...) {
     va_list vargs;
     va_start(vargs, fmt);
 
@@ -114,4 +114,5 @@ void printf(const char *fmt, ...) {
     }
 
     va_end(vargs);
+    return 0;
 }
