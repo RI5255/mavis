@@ -1,5 +1,4 @@
 #include "module.h"
-#include "buffer.h"
 #include "memory.h"
 
 valtype * parse_valtype(struct buffer *buf) {

@@ -1,4 +1,8 @@
-#include "env.h"
+#ifdef __WASM_LIBC__
+    #include <kernel/env.h>
+#else
+    #include <kernel/arch.h>
+#endif
 
 char getchar(void) {
     // wait for input

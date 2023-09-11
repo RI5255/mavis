@@ -10,4 +10,3 @@ void arch_idle(void);
 void arch_set_trap_handlers(void);
 void arch_task_switch(struct task *prev, struct task *next);
 void arch_task_init(struct task *task, uint32_t ip, void *arg);
-void arch_task_exit(struct task *task);

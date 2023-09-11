@@ -1,3 +1,4 @@
+#ifdef __WASM_LIBC__
 #include <stddef.h>
 #include <stdint.h>
 
@@ -20,3 +21,6 @@ void *malloc(size_t size) {
 
     return ptr;
 }
+
+#else
+#endif

@@ -4,14 +4,13 @@
 #include <arch_types.h>
 #include "list.h"
 #include "memory.h"
-#include "buffer.h"
-#include "vm.h"
 #include "message.h"
 
 #define NUM_TASK_MAX    8
 #define TASK_UNUSED     0
 #define TASK_RUNNABLE   1
 #define TASK_BLOCKED    2
+#define TASK_EXITED     3
 #define TASK_NAME_LEN   16
 
 typedef int         tid_t;
@@ -39,3 +38,4 @@ void task_resume(struct task *task);
 void task_block(struct task *task);
 int task_lookup(const char *name);
 void task_exit(int32_t code);
+int task_destroy(int tid);

@@ -1,3 +1,4 @@
+#pragma once
 #include <stdint.h>
 
 /*
@@ -23,6 +24,12 @@ __attribute__((
 ))
 __attribute__((noreturn))
 void task_exit(int32_t code);
+
+__attribute__((
+    __import_module__("env"),
+    __import_name__("task_destroy"),
+))
+int task_destroy(int tid);
 
 __attribute__((
     __import_module__("env"),

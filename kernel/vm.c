@@ -1,14 +1,10 @@
 #include "vm.h"
 #include "arch.h"
-#include "buffer.h"
 #include "ipc.h"
 #include "memory.h"
-#include "common.h"
-#include "message.h"
-#include "module.h"
 #include "task.h"
-#include <stdatomic.h>
-#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 
 struct local_variable *create_local_variable(valtype ty) {
     struct local_variable *val = malloc(sizeof(struct local_variable));
@@ -796,6 +792,9 @@ int32_t invoke_external(struct context *ctx, struct wasm_func *f) {
     if(strcmp(f->modName, "env") == 0) {
         if(strcmp(f->name, "task_exit") == 0) {
             task_exit(f->locals[0]->val);
+        }
+        if(strcmp(f->name, "task_destroy") == 0) {
+            return task_destroy(f->locals[0]->val);
         }
         if(strcmp(f->name, "vm_create") == 0) {
             const char *name    = (char *)ctx->mem->p + f->locals[0]->val;

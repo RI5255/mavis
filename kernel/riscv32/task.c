@@ -96,14 +96,3 @@ void arch_task_init(struct task *task, uint32_t ip, void *arg) {
         .stack_top      = (uint32_t)stack_top
     };
 }
-
-// free kernel stack
-void arch_task_exit(struct task *task) {
-    pfree((void *)task->arch.stack_bottom);
-
-    task->arch = (struct arch_task) {
-        .sp             = 0,
-        .stack_bottom   = 0,
-        .stack_top      = 0
-    };
-}

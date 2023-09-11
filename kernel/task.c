@@ -1,15 +1,10 @@
 #include "task.h"
 #include "arch.h"
-#include "buffer.h"
-#include "common.h"
 #include "memory.h"
-#include "message.h"
-#include "module.h"
 #include "vm.h"
-#include "list.h"
 #include "ipc.h"
 #include <lib/common/print.h>
-#include <stdint.h>
+#include <string.h>
 
 struct task tasks[NUM_TASK_MAX];
 static list_t  runqueue = (list_t) {
@@ -139,11 +134,8 @@ int task_lookup(const char *name) {
 
 __attribute__((noreturn))
 void task_exit(int32_t code) {
-    // free memories
-    pfree(current_task->page_top);
-
-    // init state
-    current_task->state = TASK_UNUSED;
+    // set state
+    current_task->state = TASK_EXITED;
 
     // send message to vm task
     struct message msg = {
@@ -155,4 +147,34 @@ void task_exit(int32_t code) {
     // never reach here
     PANIC("unreachable");
     __builtin_unreachable();
+}
+
+// todo: return err code
+int task_destroy(int tid) {
+    if(tid < 1 || NUM_TASK_MAX < tid) {
+        PANIC("tid %d not found", tid);
+    }
+
+    struct task *task = &tasks[tid - 1];
+
+    if(task->state != TASK_EXITED) {
+        PANIC("tid %d is not exited yet", tid);
+    }
+
+    // free memory
+    pfree(task->page_top);
+
+    // set state
+    task->state = TASK_UNUSED;
+
+    // todo: init task struct?
+    
+    // send message to shell
+     struct message msg = {
+        .type = DESTROY_TASK_MSG,
+        .destroy_task = {.tid = task->tid}
+    };
+    ipc_send("shell", &msg);
+
+    return 0;
 }

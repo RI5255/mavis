@@ -28,17 +28,23 @@ build: servers $(kernel_elf)
 arch_obj := $(BUILD_DIR)/kernel/$(ARCH).o
 
 # object files required to build the kernel
-objs := $(addprefix $(BUILD_DIR)/kernel/, kernel.o common.o buffer.o list.o module.o vm.o task.o memory.o ipc.o) \
+objs := $(addprefix $(BUILD_DIR)/kernel/, kernel.o buffer.o list.o module.o vm.o task.o memory.o ipc.o) \
 		$(arch_obj)
+
+# libc
+libc := $(BUILD_DIR)/lib/libc/libc.a
+
+.PHONY: libc
+libc: 
+	build_dir=$(BUILD_DIR)/lib/libc make libc -B -C lib/libc
 
 # rules for building kernel
 linker_script := $(BUILD_DIR)/kernel/kernel.ld
+$(kernel_elf): libc
 $(kernel_elf): OBJS := $(objs)
 $(kernel_elf): OBJS += $(addprefix $(BUILD_DIR)/servers/, shell/main.o vm/main.o)
-
-$(kernel_elf): LDFLAGS := -T$(linker_script)
 $(kernel_elf): $(objs) $(linker_script)
-	$(LD) $(LDFLAGS) -Map $(@:.elf=.map) -o $@ $(OBJS)
+	$(CC) $(CFLAGS) -Wl,-T$(linker_script) -Wl,-Map=$(@:.elf=.map) -o $@ $(libc) $(OBJS)
 
 $(arch_obj): $(addprefix $(BUILD_DIR)/kernel/$(ARCH)/, boot.o common.o task.o trap.o uart.o)
 	$(MKDIR) -p $(@D)
@@ -46,7 +52,7 @@ $(arch_obj): $(addprefix $(BUILD_DIR)/kernel/$(ARCH)/, boot.o common.o task.o tr
 
 $(BUILD_DIR)/%.o: %.c
 	$(MKDIR) -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -Ilib/libc -c -o $@ $<
 
 # linker script for kernel
 $(BUILD_DIR)/kernel/kernel.ld: kernel/kernel.ld
@@ -54,25 +60,25 @@ $(BUILD_DIR)/kernel/kernel.ld: kernel/kernel.ld
 	$(CP) $< $@
 
 # library used by servers
-libc := $(BUILD_DIR)/lib/libc/libc.a
-$(libc):
-	build_dir=$(BUILD_DIR)/lib/libc make -C lib/libc
+.PHONY: wasm-libc
+wasm-libc:
+	build_dir=$(BUILD_DIR)/lib/libc make wasm-libc -B -C lib/libc
 
 # rulues for building servers
 .PHONY: hello
-hello: $(libc)
+hello:
 	build_dir=$(BUILD_DIR)/servers/hello libc=$(libc) include=$(TOP_DIR) make build -C servers/hello
 
 .PHONY: shell
-shell: $(libc)
+shell:
 	build_dir=$(BUILD_DIR)/servers/shell libc=$(libc) include=$(TOP_DIR) make build -C servers/shell
 
 .PHONY: vm
-vm:	hello $(libc)
+vm:	hello
 	build_dir=$(BUILD_DIR)/servers/vm libc=$(libc) include=$(TOP_DIR) make build -C servers/vm
 
 .PHONY: servers
-servers: $(libc)
+servers: wasm-libc
 servers: hello shell vm
 
 # run qemu

@@ -1,7 +1,8 @@
-#include <lib/common/print.h>
 #include "kernel.h"
-#include "common.h"
+#include "arch.h"
 #include "task.h"
+#include <string.h>
+#include <lib/common/print.h>
 
 extern char __bss[], __bss_end[];
 extern char __shell_start[], __vm_start[];

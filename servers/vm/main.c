@@ -1,7 +1,7 @@
-#include <env.h>
 #include <string.h>
 #include <stdio.h>
 #include <lib/common/print.h>
+#include <kernel/env.h>
 #include <kernel/message.h>
 
 // todo: impl file system
@@ -33,15 +33,9 @@ int main(void) {
             
             case EXIT_TASK_MSG: {
                 int exit_task = msg.exit_task.tid;
-
                 INFO("vm", "tid %d exited normally", exit_task);
 
-                // send message to pager task
-                // todo: fix this
-                msg.type = DESTROY_TASK_MSG;
-                msg.destroy_task.tid = exit_task;
-                
-                ipc_send("shell", &msg);
+                task_destroy(exit_task);
                 break;
             }
             
