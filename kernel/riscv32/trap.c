@@ -14,6 +14,8 @@
         __asm__ __volatile__("csrw " #reg ", %0" :: "r"(__tmp));                \
     })
 
+#define SSTATUS_SIE (1 << 1)
+
 typedef struct __attribute__((packed)) {
     uint32_t ra;
     uint32_t gp;
@@ -137,5 +139,5 @@ void trap_handler(trap_frame *f) {
 }
 
 void arch_set_trap_handlers(void) {
-    WRITE_CSR(stvec, (uint32_t) trap_entry);
+    WRITE_CSR(mtvec, (uint32_t) trap_entry);
 }

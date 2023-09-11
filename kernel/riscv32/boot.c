@@ -15,7 +15,7 @@ void boot(void) {
         "csrw satp, zero\n"
         // prepare kernel stack
         "mv sp, %[stack_top]\n"
-        // jumpt to kernel_main
+        // jump to kernel_main
         "j kernel_main\n"
         :
         : [stack_top] "r" (__stack_top)
