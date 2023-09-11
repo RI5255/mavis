@@ -1,7 +1,6 @@
 #include "ipc.h"
-#include "message.h"
 #include "task.h"
-#include "common.h"
+#include <string.h>
 #include <lib/common/print.h>
 
 extern struct task *current_task;
@@ -18,6 +17,12 @@ int ipc_send(const char *name, struct message *msg) {
     }
 
     struct task *dst =  &tasks[tid - 1];
+
+    // todo: fix this
+    if(dst->state != TASK_BLOCKED && dst->state != TASK_RUNNABLE) {
+        PANIC("%s is not runnable", name);
+    }
+
     memcpy(msg->src, current_task->name, TASK_NAME_LEN);
 
     dst->message_box.has_message = true;
