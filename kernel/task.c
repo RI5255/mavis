@@ -170,11 +170,13 @@ int task_destroy(int tid) {
     // todo: init task struct?
     
     // send message to shell
-     struct message msg = {
-        .type = DESTROY_TASK_MSG,
-        .destroy_task = {.tid = task->tid}
-    };
-    ipc_send("shell", &msg);
+    if(strcmp(task->name, "shell") != 0) {
+        struct message msg = {
+            .type = DESTROY_TASK_MSG,
+            .destroy_task = {.tid = task->tid}
+        };
+        ipc_send("shell", &msg);
+    }
 
     return 0;
 }
