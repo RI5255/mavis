@@ -5,8 +5,8 @@
 #include <lib/common/print.h>
 
 extern char __bss[], __bss_end[];
-extern char __shell_start[], __vm_start[];
-extern int __shell_size[], __vm_size[];
+extern char __shell_start[], __vm_start[], __fs_start[];
+extern int __shell_size[], __vm_size[], __fs_size[];
 
 extern struct task *current_task;
 
@@ -24,6 +24,9 @@ void kernel_main(void) {
 
     // create shell server
     vm_create("shell", __shell_start, __shell_size[0]);
+
+    // create fs server
+    vm_create("fs", __fs_start, __fs_size[0]);
     
     task_switch();
     

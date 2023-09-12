@@ -6,6 +6,7 @@ libc 			?=
 libc_path 		:= $(subst build/,, $(dir $(libc)))
 include 		?=
 
+hello 			:= $(build_dir)/../hello/main.o
 wasm 			:= $(build_dir)/main.wasm
 obj 			:= $(build_dir)/main.o
 
@@ -14,7 +15,7 @@ build: $(wasm) $(obj)
 
 $(wasm): main.c
 	$(MKDIR) -p $(@D)
-	$(WASI_SDK_CLANG) -nostdlib -I$(libc_path) -I$(include) $^ $(libc) -o $@
+	$(WASI_SDK_CLANG) -nostdlib -I$(libc_path) -I$(include) $^ $(libc) $(hello) -o $@
 
 $(obj): $(wasm) 
 $(obj): main.S

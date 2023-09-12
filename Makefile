@@ -42,7 +42,7 @@ libc:
 linker_script := $(BUILD_DIR)/kernel/kernel.ld
 $(kernel_elf): libc
 $(kernel_elf): OBJS := $(objs)
-$(kernel_elf): OBJS += $(addprefix $(BUILD_DIR)/servers/, shell/main.o vm/main.o)
+$(kernel_elf): OBJS += $(addprefix $(BUILD_DIR)/servers/, shell/main.o vm/main.o fs/main.o)
 $(kernel_elf): $(objs) $(linker_script)
 	$(CC) $(CFLAGS) -Wl,-T$(linker_script) -Wl,-Map=$(@:.elf=.map) -o $@ $(libc) $(OBJS)
 
@@ -74,12 +74,16 @@ shell:
 	build_dir=$(BUILD_DIR)/servers/shell libc=$(libc) include=$(TOP_DIR) make build -C servers/shell
 
 .PHONY: vm
-vm:	hello
+vm:
 	build_dir=$(BUILD_DIR)/servers/vm libc=$(libc) include=$(TOP_DIR) make build -C servers/vm
+
+.PHONY: fs
+fs: hello
+	build_dir=$(BUILD_DIR)/servers/fs libc=$(libc) include=$(TOP_DIR) make build -C servers/fs
 
 .PHONY: servers
 servers: wasm-libc
-servers: hello shell vm
+servers: hello shell vm fs
 
 # run qemu
 .PHONY: run

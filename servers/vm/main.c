@@ -1,33 +1,57 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <lib/common/print.h>
 #include <kernel/env.h>
 #include <kernel/message.h>
-
-// todo: impl file system
-
-extern char __hello_start[];
-extern int __hello_size[];
 
 int main(void) {
     struct message msg;
     for(;;) {
         // receive from any server
         ipc_receive(0, &msg);
-        char *src = msg.src;
 
         switch(msg.type) {
             case SPAWN_TASK_MSG:
                 if(strcmp(msg.spawn_task.name, "hello") == 0) {
                     
+                    // open file 
+                    msg.type = OPEN_FILE_MSG;
+                    memcpy(msg.open_file.name, "hello", 16);
+
+                    ipc_call("fs", &msg);
+                    
+                    int fd      = msg.open_file.fd;
+                    int size    = msg.open_file.size;
+
+                    // get file data
+                    char *buf = malloc(size);
+
+                    int cursor = 0;
+                    do {
+                        msg.type = GET_FILE_DATA_MSG;
+                        msg.get_file_data.fd = fd;
+
+                        ipc_call("fs", &msg);
+                        
+                        int data_len = msg.get_file_data.data_len;
+                        memcpy(buf + cursor, msg.get_file_data.data, data_len);
+                        cursor += data_len;
+                    } while(!msg.get_file_data.eof);
+
+                    // close file
+                    msg.type = CLOSE_FILE_MSG;
+                    msg.close_file.fd = fd;
+                    ipc_call("fs", &msg);
+
                     // create hello world task
                     INFO("vm", "launching hello...");
-                    int tid = vm_create("hello", __hello_start, __hello_size[0]);
+                    int tid = vm_create("hello", buf, size);
 
                     msg.type = SPAWN_TASK_REPLY_MSG;
                     msg.spawn_task.tid = tid;
 
-                    ipc_send(src, &msg);
+                    ipc_send("shell", &msg);
                 }
                 break;
             
