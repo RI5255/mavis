@@ -3,6 +3,7 @@
 #include "ipc.h"
 #include "memory.h"
 #include "task.h"
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -814,9 +815,9 @@ int32_t invoke_external(struct context *ctx, struct wasm_func *f) {
             return ipc_send(name, msg);
         }
         if(strcmp(f->name, "ipc_receive") == 0) {
-            const char *name    = (char *)ctx->mem->p + f->locals[0]->val;
+            int src             = f->locals[0]->val;
             struct message *msg = (struct message *)(ctx->mem->p + f->locals[1]->val);
-            return ipc_receive(name, msg);
+            return ipc_receive(src, msg);
         }
         if(strcmp(f->name, "ipc_call") == 0) {
             const char *name    = (char *)ctx->mem->p + f->locals[0]->val;

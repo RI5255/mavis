@@ -1,4 +1,5 @@
 #include "ipc.h"
+#include "list.h"
 #include "task.h"
 #include <string.h>
 #include <lib/common/print.h>
@@ -16,46 +17,65 @@ int ipc_send(const char *name, struct message *msg) {
         PANIC("%s not found", name);
     }
 
-    struct task *dst =  &tasks[tid - 1];
-
-    // todo: fix this
-    if(dst->state != TASK_BLOCKED && dst->state != TASK_RUNNABLE) {
-        PANIC("%s is not runnable", name);
+    if(tid == current_task->tid) {
+        PANIC("send to itself is not allowed");
     }
 
-    memcpy(msg->src, current_task->name, TASK_NAME_LEN);
+    struct task *dst =  &tasks[tid - 1];
 
-    dst->message_box.has_message = true;
-    dst->message_box.message = *msg;
+    bool ready = (dst->state == TASK_BLOCKED
+              && (dst->wait_for == IPC_ANY || dst->wait_for == current_task->tid));
+
+    if(!ready) {
+        WARN("kernel", "%s is not ready", dst->name);
+        list_push_back(&dst->senders, &current_task->waitqueue_next);
+        task_block(current_task);
+        task_switch();
+    }
+
+    // copy message
+    memcpy(msg->src, current_task->name, TASK_NAME_LEN);
+    dst->message = *msg;
 
     // wake up receiver
     task_resume(dst);
-    task_switch();
 
     return 0;
 }
 
-// todo: Verify the existence of the sender.
-int ipc_receive(const char *name, struct message *msg) {
-    if(current_task->message_box.has_message) {
-        *msg = current_task->message_box.message;
-        current_task->message_box.has_message = false;
-        return 0;
+/*
+    ipc_receive takes a tid as an argument. 
+    This is because the sender is known when ipc_receive is called. 
+    Therefore, unlike ipc_send, the server name is not used.
+*/
+int ipc_receive(int src, struct message *msg) {
+    LIST_FOR_EACH(sender, &current_task->senders, struct task, waitqueue_next) {
+        if(src == IPC_ANY || sender->tid == src) {
+            INFO("kernel", "waking up %s", sender->name);
+            list_remove(&sender->waitqueue_next);
+            task_resume(sender);
+            src = sender->tid;
+            break;
+        }
     }
 
     // wait for message
+    current_task->wait_for = src;
     task_block(current_task);
     task_switch();
 
-    // received message
-    *msg = current_task->message_box.message;
-    current_task->message_box.has_message = false;
+    // receive message
+    current_task->wait_for = IPC_DENY;
+    *msg = current_task->message;
 
     return 0;
 }
 
 int ipc_call(const char *name, struct message *msg) {
     ipc_send(name, msg);
-    ipc_receive(name, msg);
+    
+    int src = task_lookup(name);
+    ipc_receive(src, msg);
+    
     return 0;
 }

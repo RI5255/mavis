@@ -32,8 +32,3 @@ struct message {
         } destroy_task;
     };
 };
-
-struct message_box {
-    bool            has_message;
-    struct message  message;
-};

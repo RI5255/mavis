@@ -26,8 +26,10 @@ struct task {
     void                *page_top;
 
     list_elem_t         next;
-
-    struct message_box  message_box;
+    list_elem_t         waitqueue_next;
+    list_t              senders;
+    tid_t               wait_for;
+    struct message      message;
 };
 
 void task_init(void);

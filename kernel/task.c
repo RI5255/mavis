@@ -23,9 +23,6 @@ static int alloc_tid(void) {
 }
 
 static void init_task_struct(struct task *task, const char *name, int tid, uint32_t ip, uint32_t *arg) {
-    // init message_box
-    task->message_box.has_message = false;
-
     // init malloc_pool
     // In the current implementation, the top of the page is used as the header.
     LIST_INIT(&task->malloc_pool.pages);
@@ -42,6 +39,11 @@ static void init_task_struct(struct task *task, const char *name, int tid, uint3
 
     // set tid
     task->tid = tid;
+
+    // init lists
+    LIST_INIT(&task->senders);
+    list_elem_init(&task->next);
+    list_elem_init(&task->waitqueue_next);
 }
 
 void task_resume(struct task *task) {
@@ -143,6 +145,8 @@ void task_exit(int32_t code) {
         .exit_task = {.tid = current_task->tid}
     };
     ipc_send("vm", &msg);
+
+    task_switch();
 
     // never reach here
     PANIC("unreachable");

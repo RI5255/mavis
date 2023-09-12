@@ -35,7 +35,7 @@ int main(void) {
 
             // wait for end
             for(;;) {
-                ipc_receive("vm", &msg);
+                ipc_receive(0, &msg);
                 if(msg.type == DESTROY_TASK_MSG && msg.destroy_task.tid == new_task)
                     break;
             }
