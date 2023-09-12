@@ -1,4 +1,3 @@
-#include "include/arch_types.h"
 #include <arch_types.h>
 #include <kernel/task.h>
 #include <kernel/memory.h>
@@ -45,36 +44,43 @@ void arch_task_switch(struct task *prev, struct task *next) {
     arch_context_switch(&prev->arch.sp, &next->arch.sp);
 }
 
+// launch_vm_task is defined in kernel/task.c
 __attribute__((naked))
-static void arch_task_entry(void) {
+static void arch_vm_entry(void) {
     __asm__ __volatile__(
         "lw a0, 0 * 4(sp)\n"  // a0
-        "lw a1, 1 * 4(sp)\n"  // ip
+        "lw a1, 1 * 4(sp)\n"  // a1
         "add sp, sp, 2 * 4\n"
-        "jalr a1\n"
+        "j launch_vm_task\n"
 
         "1:\n"
         "j 1b\n"
     );
 }
 
-void arch_task_init(struct task *task, uint32_t ip, void *arg) {
-    
+// allocate kernel stack only.
+void arch_init_idle_task(struct task *task) {
+    uint32_t stack_bottom = (uint32_t)pmalloc(1);
+    uint32_t stack_top = stack_bottom + PAGE_SIZE;
+
+    uint32_t *sp = (uint32_t *)stack_top;
+
+    task->arch = (struct arch_task) {
+        .sp             = (uint32_t)sp,
+        .stack_bottom   = (uint32_t)stack_bottom,
+        .stack_top      = (uint32_t)stack_top
+    };
+}
+
+void arch_vm_init(struct task *task, void *image, int size) {
     // todo: define paddr_t
     uint32_t stack_bottom = (uint32_t)pmalloc(1);
     uint32_t stack_top = stack_bottom + PAGE_SIZE;
 
     uint32_t *sp = (uint32_t *)stack_top;
     
-    uint32_t entry;
-
-    if(arg) {
-        *--sp = ip;
-        *--sp = (uint32_t)arg;
-        entry = (uint32_t)arch_task_entry;
-    } else {
-        entry = ip;
-    }
+    *--sp = size;
+    *--sp = (uint32_t)image;
 
     *--sp = 0;                      // s11
     *--sp = 0;                      // s10
@@ -88,7 +94,7 @@ void arch_task_init(struct task *task, uint32_t ip, void *arg) {
     *--sp = 0;                      // s2
     *--sp = 0;                      // s1
     *--sp = 0;                      // s0
-    *--sp = entry;                  // ra 
+    *--sp = (uint32_t)arch_vm_entry;// ra
 
     task->arch = (struct arch_task) {
         .sp             = (uint32_t)sp,

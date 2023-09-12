@@ -1,5 +1,6 @@
 #include "task.h"
 #include "arch.h"
+#include "buffer.h"
 #include "memory.h"
 #include "vm.h"
 #include "ipc.h"
@@ -22,7 +23,7 @@ static int alloc_tid(void) {
     return 0;
 }
 
-static void init_task_struct(struct task *task, const char *name, int tid, uint32_t ip, uint32_t *arg) {
+static void vm_init(struct task *task, const char *name, int tid, void *image, int size) {
     // init malloc_pool
     // In the current implementation, the top of the page is used as the header.
     LIST_INIT(&task->malloc_pool.pages);
@@ -32,7 +33,7 @@ static void init_task_struct(struct task *task, const char *name, int tid, uint3
     task->malloc_pool.next_ptr = align_up(page->base, 0x10);
    
     // init stack
-    arch_task_init(task, ip, arg);
+    arch_vm_init(task, image, size);
 
     // set task name
     memcpy(task->name, name, TASK_NAME_LEN);
@@ -55,7 +56,16 @@ void task_block(struct task *task) {
     task->state = TASK_BLOCKED;
 }
 
-int task_create(const char *name, uint32_t ip, uint32_t *arg) {
+// todo: impl file system and fix this
+// this is entry point of vm_task
+void launch_vm_task(void *image, int size) {
+    struct buffer *buf = newbuffer(image, size);
+    module *m = new_module(buf);
+    struct context *ctx = create_context(m);
+    run_vm(ctx);
+}
+
+int vm_create(const char *name, void *image, int size) {
     // alloc tid
     int tid = alloc_tid();
     if(!tid) {
@@ -65,25 +75,12 @@ int task_create(const char *name, uint32_t ip, uint32_t *arg) {
 
     // init task struct
     struct task *task = &tasks[tid - 1];
-    init_task_struct(task, name, tid, ip, arg);
+    vm_init(task, name, tid, image, size);
 
-    // push to runqueue
+    // push to runqueu
     task_resume(task);
 
     return tid;
-}
-
-// todo: impl file system and fix this
-// this is entry point of vm_task
-static void launch_vm_task(struct buffer *buf) {
-    module *m = new_module(buf);
-    struct context *ctx = create_context(m);
-    run_vm(ctx);
-}
-
-int vm_create(const char *name, void *image, int size) {
-    struct buffer *buf = newbuffer(image, size);
-    return task_create(name, (uint32_t)launch_vm_task, (uint32_t *)buf);
 }
 
 struct task *current_task;
@@ -105,10 +102,9 @@ void task_init(void) {
     int tid = alloc_tid();
 
     struct task *idle_task = &tasks[tid - 1];
-    init_task_struct(idle_task,"idle", -1, 0, NULL);
+    arch_init_idle_task(idle_task);
 
     task_resume(idle_task);
-
     current_task = idle_task;
 }
 

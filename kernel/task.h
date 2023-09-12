@@ -33,7 +33,6 @@ struct task {
 };
 
 void task_init(void);
-int task_create(const char *name, uint32_t ip, uint32_t *arg);
 int vm_create(const char *name, void *image, int size);
 void task_switch(void);
 void task_resume(struct task *task);
