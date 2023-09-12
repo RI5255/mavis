@@ -295,9 +295,13 @@ static void print_instr(instr *i) {
         }
 
         case I32Const:
-            printf("i32.const %x\n", i->i32_const.n);
+            printf("i32.const %x\n", i->n);
             break;
         
+        case I64Const:
+            printf("i64.const %x\n", i->n);
+            break;
+
         case I32Eqz:
             puts("i32.eqz");
             break;
@@ -542,9 +546,13 @@ instr *invoke_i(struct context *ctx, instr *ip) {
         }
 
         case I32Const:
-            writei32(ctx->stack, ip->i32_const.n);
+            writei32(ctx->stack, ip->n);
             break;
-
+        
+        case I64Const:
+            writei64(ctx->stack, ip->n);
+            break;
+        
         case I32Eqz: {
             int32_t c = readi32(ctx->stack);
             writei32(ctx->stack, c == 0);

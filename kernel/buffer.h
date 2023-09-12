@@ -16,8 +16,8 @@ uint8_t readbyte(struct buffer *buf);
 uint32_t readu32(struct buffer *buf);
 int32_t readi32(struct buffer *buf);
 int64_t readi64(struct buffer *buf);
-uint32_t readu32_LEB128(struct buffer *buf);
-int32_t readi32_LEB128(struct buffer *buf);
+uint64_t readu64_LEB128(struct buffer *buf);
+int64_t readi64_LEB128(struct buffer *buf);
 struct buffer * readbuffer(struct buffer *buf, int len);
 char * readname(struct buffer *buf);
 

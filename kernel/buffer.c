@@ -61,8 +61,8 @@ int64_t readi64(struct buffer *buf) {
 }
 
 // LEB128(Little Endian Base 128)
-uint32_t readu32_LEB128(struct buffer *buf) {
-    uint32_t result = 0, shift = 0;
+uint64_t readu64_LEB128(struct buffer *buf) {
+    uint64_t result = 0, shift = 0;
     while(1) {
         uint8_t byte = readbyte(buf); 
         result |= (byte & 0b1111111) << shift;
@@ -72,8 +72,8 @@ uint32_t readu32_LEB128(struct buffer *buf) {
     }
 }
 
-int32_t readi32_LEB128(struct buffer *buf) {
-    int32_t result = 0, shift = 0;
+int64_t readi64_LEB128(struct buffer *buf) {
+    int64_t result = 0, shift = 0;
     while(1) {
         uint8_t byte = readbyte(buf);
         result |= (byte & 0b1111111) << shift;
@@ -88,7 +88,7 @@ int32_t readi32_LEB128(struct buffer *buf) {
 }
 
 char * readname(struct buffer *buf) {
-    uint32_t n = readu32_LEB128(buf);
+    uint32_t n = readu64_LEB128(buf);
     char *name = malloc(sizeof(char) * (n + 1));
 
     for(uint32_t i = 0; i < n; i++) {

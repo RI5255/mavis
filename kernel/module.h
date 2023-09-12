@@ -65,6 +65,7 @@ typedef enum {
     I64Store    = 0x37,
     I32Store8   = 0x3a,
     I32Const    = 0x41,
+    I64Const    = 0x42,
     I32Eqz      = 0x45,
     I32Eq       = 0x46,
     I32Ne       = 0x47,
@@ -143,7 +144,7 @@ typedef struct {
     list_elem_t link_block; //used to link block instructions
     uint8_t     op;
     union {
-        i32_const_instr     i32_const;
+        int64_t             n;
         memarg              memarg;
         local_get_instr     local_get;
         local_set_instr     local_set;
