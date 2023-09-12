@@ -3,3 +3,4 @@ build/
 *.o
 *.elf
 */.gdb_history
+.vscode
