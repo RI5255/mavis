@@ -461,30 +461,71 @@ instr *invoke_i(struct context *ctx, instr *ip) {
             break;
         
         case LocalGet: {
-            writei32(
-                ctx->stack, 
-                func->locals[ip->local_get.idx]->val
-            );
+            struct local_variable *local = func->locals[ip->local_get.idx];
+            switch(local->ty) {
+                case I32:
+                    writei32(
+                        ctx->stack, 
+                        local->val
+                    );
+                    break;
+                case I64:
+                    writei64(
+                        ctx->stack,
+                        local->val
+                    );
+                    break;
+            }
             break;
         }
 
         case LocalSet: {
-            int32_t val = readi32(ctx->stack);
-            func->locals[ip->local_set.idx]->val = val;
+            struct local_variable *local = func->locals[ip->local_set.idx];
+            int64_t val = 0;
+            switch(local->ty) {
+                case I32:
+                    val = readi32(ctx->stack);
+                    break;
+                case I64:
+                    val = readi64(ctx->stack);
+                    break;
+            }
+            local->val = val;
             break;
         }
 
         case GlobalGet: {
-            writei32(
-                ctx->stack, 
-                ctx->globals[ip->global_get.idx]->val
-            );
+            struct global_variable *global = ctx->globals[ip->global_get.idx];
+            switch(global->ty.ty) {
+                case I32:
+                    writei32(
+                        ctx->stack,
+                        global->val
+                    );
+                    break;
+                case I64:
+                    writei64(
+                        ctx->stack,
+                        global->val
+                    );
+                    break;
+            }
             break;
         }
 
         case GlobalSet: {
-            int32_t val = readi32(ctx->stack);
-            ctx->globals[ip->global_set.idx]->val = val;
+            struct global_variable *global = ctx->globals[ip->global_set.idx];
+            int64_t val = 0;
+
+            switch(global->ty.ty) {
+                case I32:
+                    val = readi32(ctx->stack);
+                    break;
+                case I64:
+                    val = readi64(ctx->stack);
+                    break;
+            }
+            global->val = val;
             break;
         }
 
