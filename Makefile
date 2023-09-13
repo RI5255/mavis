@@ -77,9 +77,19 @@ shell:
 vm:
 	build_dir=$(BUILD_DIR)/servers/vm libc=$(libc) include=$(TOP_DIR) make build -C servers/vm
 
+image_path = $(BUILD_DIR)/fs/image
+
+.PHONY: image
+image: hello
+image: $(image_path)
+$(image_path): dirs = $(addprefix $(BUILD_DIR)/servers/, hello)
+$(image_path): 
+	$(MKDIR) -p $(@D)
+	python3 tools/mkimage.py $(dirs) -o $(image_path)
+
 .PHONY: fs
-fs: hello
-	build_dir=$(BUILD_DIR)/servers/fs libc=$(libc) include=$(TOP_DIR) make build -C servers/fs
+fs: image
+	build_dir=$(BUILD_DIR)/servers/fs libc=$(libc) include=$(TOP_DIR) image_path=$(image_path) make build -C servers/fs
 
 .PHONY: servers
 servers: wasm-libc

@@ -78,7 +78,6 @@ int ipc_send(const char *name, struct message *msg) {
 int ipc_receive(int src, struct message *msg) {
     LIST_FOR_EACH(sender, &current_task->senders, struct task, waitqueue_next) {
         if(src == IPC_ANY || sender->tid == src) {
-            INFO("kernel", "waking up %s", sender->name);
             list_remove(&sender->waitqueue_next);
             task_resume(sender);
             src = sender->tid;

@@ -6,15 +6,10 @@ libc_path 		:= $(subst build/,, $(dir $(libc)))
 include 		?=
 
 wasm 			:= $(build_dir)/main.wasm
-obj 			:= $(build_dir)/main.o
 
 .PHONY: build
-build: $(wasm) $(obj)
+build: $(wasm)
 
 $(wasm): main.c
 	$(MKDIR) -p $(@D)
 	$(WASI_SDK_CLANG) -nostdlib -I$(libc_path) -I$(include) $^ $(libc) -o $@
-
-$(obj): $(wasm) main.S
-	$(MKDIR) -p $(@D)
-	$(WASI_SDK_CLANG) -D__wasm_path__='"$(wasm)"' -c -o $@ main.S
