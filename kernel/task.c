@@ -132,8 +132,8 @@ int task_lookup(const char *name) {
 
 __attribute__((noreturn))
 void task_exit(int32_t code) {
-    // set state
-    current_task->state = TASK_EXITED;
+    // mark that this task is in the process of being deleted
+    current_task->destroyed = true;
 
     // send message to vm task
     struct message msg = {
@@ -157,7 +157,7 @@ int task_destroy(int tid) {
 
     struct task *task = &tasks[tid - 1];
 
-    if(task->state != TASK_EXITED) {
+    if(!task->destroyed) {
         PANIC("tid %d is not exited yet", tid);
     }
 

@@ -10,7 +10,6 @@
 #define TASK_UNUSED     0
 #define TASK_RUNNABLE   1
 #define TASK_BLOCKED    2
-#define TASK_EXITED     3
 #define TASK_NAME_LEN   16
 
 typedef int         tid_t;
@@ -24,6 +23,8 @@ struct task {
     tid_t                   tid;
     int                     state;
     char                    name[TASK_NAME_LEN];
+
+    bool                    destroyed;
 
     struct arch_task        arch;
     struct malloc_pool      malloc_pool;
