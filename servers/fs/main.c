@@ -12,7 +12,6 @@ extern int __hello_size[];
 
 struct fd {
     int state;
-    int cursor;
 };
 
 static struct fd fds[NUM_MAX_FILE] = {};
@@ -61,21 +60,7 @@ int main(void) {
                 struct fd *fd = &fds[msg.get_file_data.fd];
 
                 if(fd->state == OPEN) {
-                    
-                    int rsize = 256;
-
-                    if(__hello_size[0] < fd->cursor + 256) {
-                        rsize = __hello_size[0] - fd->cursor;
-                    }
-
-                    memcpy(
-                        msg.get_file_data.data, 
-                        __hello_start + fd->cursor,
-                        rsize
-                    );
-                    fd->cursor += rsize;
-                    msg.get_file_data.data_len = rsize;
-                    msg.get_file_data.eof = fd->cursor == __hello_size[0];
+                    ipc_copy(src, __hello_start);
                 } else {
                     WARN("fs", "%d is not open", msg.get_file_data.fd);
                 }
@@ -89,7 +74,6 @@ int main(void) {
 
                 struct fd *fd = &fds[msg.get_file_data.fd];
                 if(fd->state == OPEN) {
-                    fd->cursor = 0;
                     fd->state  = CLOSE;
                 } else {
                     WARN("fs", "%d is not open", msg.close_file.fd);

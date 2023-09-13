@@ -39,6 +39,18 @@ int vm_create(const char *name, void *image, int size);
 
 __attribute__((
     __import_module__("env"),
+    __import_name__("ipc_share_buffer"),
+))
+void ipc_share_buffer(char *buf, int len);
+
+__attribute__((
+    __import_module__("env"),
+    __import_name__("ipc_copy"),
+))
+int ipc_copy(const char *name, char *buf);
+
+__attribute__((
+    __import_module__("env"),
     __import_name__("ipc_send"),
 ))
 int ipc_send(const char *name, void *msg);

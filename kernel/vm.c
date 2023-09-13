@@ -869,6 +869,16 @@ int32_t invoke_external(struct context *ctx, struct wasm_func *f) {
         if(strcmp(f->name, "arch_serial_read") == 0) {
             return arch_serial_read();
         }
+        if(strcmp(f->name, "ipc_share_buffer") == 0) {
+            char *buf   = (char *)ctx->mem->p + f->locals[0]->val;
+            int size    = f->locals[1]->val;
+            ipc_share_buffer(buf, size);
+        }
+        if(strcmp(f->name, "ipc_copy") == 0) {
+            const char *name    = (char *)ctx->mem->p + f->locals[0]->val;
+            char *buf           = (char *)ctx->mem->p + f->locals[1]->val;
+            ipc_copy(name, buf);
+        }
         if(strcmp(f->name, "ipc_send") == 0) {
             const char *name    = (char *)ctx->mem->p + f->locals[0]->val;
             struct message *msg = (struct message *)(ctx->mem->p + f->locals[1]->val);

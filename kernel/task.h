@@ -15,21 +15,27 @@
 
 typedef int         tid_t;
 
+struct shared_buffer {
+    int     len;
+    char    *p;
+};
+
 struct task {
-    tid_t               tid;
-    int                 state;
-    char                name[TASK_NAME_LEN];
+    tid_t                   tid;
+    int                     state;
+    char                    name[TASK_NAME_LEN];
 
-    struct arch_task    arch;
-    struct malloc_pool  malloc_pool;
+    struct arch_task        arch;
+    struct malloc_pool      malloc_pool;
     
-    void                *page_top;
+    void                    *page_top;
 
-    list_elem_t         next;
-    list_elem_t         waitqueue_next;
-    list_t              senders;
-    tid_t               wait_for;
-    struct message      message;
+    list_elem_t             next;
+    list_elem_t             waitqueue_next;
+    list_t                  senders;
+    tid_t                   wait_for;
+    struct shared_buffer    shared_buffer;
+    struct message          message;
 };
 
 void task_init(void);

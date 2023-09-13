@@ -30,9 +30,6 @@ struct message {
 
         struct {
             int     fd;
-            int     data_len;
-            bool    eof;
-            uint8_t data[256];
         } get_file_data;
 
         struct {

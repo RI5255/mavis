@@ -26,18 +26,13 @@ int main(void) {
 
                     // get file data
                     char *buf = malloc(size);
+                    ipc_share_buffer(buf, size);
 
-                    int cursor = 0;
-                    do {
-                        msg.type = GET_FILE_DATA_MSG;
-                        msg.get_file_data.fd = fd;
+                    msg.type = GET_FILE_DATA_MSG;
+                    msg.get_file_data.fd = fd;
 
-                        ipc_call("fs", &msg);
-                        
-                        int data_len = msg.get_file_data.data_len;
-                        memcpy(buf + cursor, msg.get_file_data.data, data_len);
-                        cursor += data_len;
-                    } while(!msg.get_file_data.eof);
+                    ipc_call("fs", &msg);
+
 
                     // close file
                     msg.type = CLOSE_FILE_MSG;

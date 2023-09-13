@@ -7,6 +7,33 @@
 extern struct task *current_task;
 extern struct task tasks[NUM_TASK_MAX];
 
+void ipc_share_buffer(char *buf, int len) {
+    // register shared buffer
+    current_task->shared_buffer = (struct shared_buffer) {
+        .len = len, .p = buf
+    };
+}
+
+int ipc_copy(const char *name, char *buf) {
+    int tid = task_lookup(name);
+
+    if(!tid) {
+        // todo: return err code
+        PANIC("%s not found", name);
+    }
+
+    struct task *dst = &tasks[tid - 1];
+    struct shared_buffer *shared_buffer = &dst->shared_buffer;
+
+    if(!shared_buffer->p) {
+        PANIC("%s has no shared buffer", name);
+    }
+
+    memcpy(shared_buffer->p, buf, shared_buffer->len);
+
+    return 0;
+}
+
 // todo: fix this
 int ipc_send(const char *name, struct message *msg) {
 
