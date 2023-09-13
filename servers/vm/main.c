@@ -28,7 +28,7 @@ int main(void) {
                     char *buf = malloc(size);
                     ipc_share_buffer(buf, size);
 
-                    msg.type = GET_FILE_DATA_MSG;
+                    msg.type = READ_FILE_DATA_MSG;
                     msg.get_file_data.fd = fd;
 
                     ipc_call("fs", &msg);

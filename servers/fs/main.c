@@ -56,8 +56,8 @@ int main(void) {
                 ipc_send(src, &msg);
                 break;
             
-            case GET_FILE_DATA_MSG: {
-                msg.type = GET_FILE_DATA_REPLY_MSG;
+            case READ_FILE_DATA_MSG: {
+                msg.type = READ_FILE_DATA_REPLY_MSG;
                 
                 // todo: err handling
                 // todo: fix this
