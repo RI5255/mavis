@@ -61,6 +61,7 @@ typedef enum {
     I64Load     = 0x29,
     I32Load8_s  = 0x2c,
     I32Load8_u  = 0x2d,
+    I32Load16_u = 0x2f,
     I32Store    = 0x36,
     I64Store    = 0x37,
     I32Store8   = 0x3a,

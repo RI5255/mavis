@@ -178,6 +178,13 @@ uint8_t loadbyte(struct buffer *buf, int32_t ea) {
     return (buf->p + ea)[0];
 }
 
+uint16_t loadu16(struct buffer *buf, int32_t ea) {
+    if(ea + 2 > buf->len)
+        return 0;
+    
+    return *(uint16_t *)(buf->p + ea);
+}
+
 int32_t loadi32(struct buffer *buf, int32_t ea) {
     if(ea + 4 > buf->len)
         return 0;

@@ -138,6 +138,7 @@ instr * parse_instr(struct buffer *buf) {
         case I64Load:
         case I32Load8_s:
         case I32Load8_u:
+        case I32Load16_u:
         case I32Store:
         case I64Store:
         case I32Store8:
