@@ -14,8 +14,6 @@
         __asm__ __volatile__("csrw " #reg ", %0" :: "r"(__tmp));                \
     })
 
-#define SSTATUS_SIE (1 << 1)
-
 typedef struct __attribute__((packed)) {
     uint32_t ra;
     uint32_t gp;
@@ -55,7 +53,7 @@ __attribute__((naked))
 __attribute__((aligned(4)))
 static void trap_entry(void) {
     __asm__ __volatile__(
-        "csrw sscratch, sp\n"
+        "csrw mscratch, sp\n"
         "addi sp, sp, -4 * 31\n"
         "sw ra,  4 * 0(sp)\n"
         "sw gp,  4 * 1(sp)\n"
@@ -88,11 +86,11 @@ static void trap_entry(void) {
         "sw s10, 4 * 28(sp)\n"
         "sw s11, 4 * 29(sp)\n"
 
-        "csrr a0, sscratch\n"
+        "csrr a0, mscratch\n"
         "sw a0,  4 * 30(sp)\n"
 
         "mv a0, sp\n"
-        "call trap_handler\n"
+        "call riscv32_handle_trap\n"
 
         "lw ra,  4 * 0(sp)\n"
         "lw gp,  4 * 1(sp)\n"
@@ -125,17 +123,26 @@ static void trap_entry(void) {
         "lw s10, 4 * 28(sp)\n"
         "lw s11, 4 * 29(sp)\n"
         "lw sp,  4 * 30(sp)\n"
-        "sret\n"
+        "mret\n"
     );
 }
 
 // interrupt handler
-void trap_handler(trap_frame *f) {
-    uint32_t scause = READ_CSR(scause);
-    uint32_t stval = READ_CSR(stval);
-    uint32_t user_pc = READ_CSR(sepc);
+void riscv32_handle_trap(trap_frame *f) {
+    uint32_t mcause = READ_CSR(mcause);
+    uint32_t mtval = READ_CSR(mtval);
+    uint32_t mepc = READ_CSR(mepc);
 
-    PANIC("unexpected trap scause=%x, stval=%x, sepc=%x\n", scause, stval, user_pc);
+    switch(mcause) {
+        default:
+            PANIC(
+                "unexpected trap mcause=%x, mtval=%x, mepc=%x\n", 
+                mcause, 
+                mtval, 
+                mepc
+            );
+            break;
+    }
 }
 
 void arch_set_trap_handlers(void) {
