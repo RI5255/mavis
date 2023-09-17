@@ -59,7 +59,7 @@ __attribute__((
     __import_module__("env"),
     __import_name__("ipc_receive"),
 ))
-int ipc_receive(int src, struct message *msg);
+int ipc_receive(int src, void *msg);
 
 __attribute__((
     __import_module__("env"),

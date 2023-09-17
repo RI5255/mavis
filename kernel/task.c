@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "vm.h"
 #include "ipc.h"
+#include "riscv32/asm.h"
 #include <lib/common/print.h>
 #include <string.h>
 
@@ -83,28 +84,28 @@ int vm_create(const char *name, void *image, int size) {
     return tid;
 }
 
-struct task *current_task;
+struct task *current_task, *idle_task;
 
 struct task *schedule(void) {
     struct task *next = LIST_POP_TAIL(&runqueue, struct task, next);
 
-    if(next)
+    if(next) {
         return next;
-
+    }
     if(current_task->state == TASK_RUNNABLE)
         return current_task;
-
-    __builtin_unreachable();
+    
+    return idle_task;
 }
 
 // create idle task
 void task_init(void) {
     int tid = alloc_tid();
 
-    struct task *idle_task = &tasks[tid - 1];
+    idle_task = &tasks[tid - 1];
     arch_init_idle_task(idle_task);
+    idle_task->state = TASK_RUNNABLE;
 
-    task_resume(idle_task);
     current_task = idle_task;
 }
 
@@ -115,7 +116,10 @@ void task_switch(void) {
     if(prev == next)
         return;
     
-    //todo: push back to runqueue if not idle_task?
+    // push back to runqueue
+    if(prev->state == TASK_RUNNABLE && prev != idle_task && !prev->destroyed) {
+        list_push_back(&runqueue, &prev->next);
+    }
 
     current_task = next;
     arch_task_switch(prev, next);

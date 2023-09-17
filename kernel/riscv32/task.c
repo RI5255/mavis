@@ -1,3 +1,5 @@
+#include "asm.h"
+
 #include <arch_types.h>
 #include <kernel/task.h>
 #include <kernel/memory.h>
@@ -47,9 +49,12 @@ void arch_task_switch(struct task *prev, struct task *next) {
 // launch_vm_task is defined in kernel/task.c
 __attribute__((naked))
 static void arch_vm_entry(void) {
-    __asm__ __volatile__(
-        "lw a0, 0 * 4(sp)\n"  // a0
-        "lw a1, 1 * 4(sp)\n"  // a1
+    // enable interrupt
+    CSRRS(mstatus, MSTATUS_MIE);
+
+    __asm__ __volatile__(        
+        "lw a0, 0 * 4(sp)\n"
+        "lw a1, 1 * 4(sp)\n"
         "add sp, sp, 2 * 4\n"
         "j launch_vm_task\n"
 
