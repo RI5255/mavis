@@ -55,7 +55,7 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -Ilib/libc -c -o $@ $<
 
 # linker script for kernel
-$(BUILD_DIR)/kernel/kernel.ld: kernel/kernel.ld
+$(BUILD_DIR)/kernel/kernel.ld: kernel/$(ARCH)/kernel.ld
 	$(MKDIR) -p $(@D)
 	$(CP) $< $@
 

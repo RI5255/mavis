@@ -4,7 +4,6 @@
 #include "memory.h"
 #include "vm.h"
 #include "ipc.h"
-#include "riscv32/asm.h"
 #include <lib/common/print.h>
 #include <string.h>
 
