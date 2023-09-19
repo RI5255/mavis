@@ -1,72 +1,91 @@
 #include "memory.h"
 #include "task.h"
+#include "list.h"
+#include <stdbool.h>
 #include <string.h>
 #include <lib/common/print.h>
 
 extern uint8_t __pmalloc_pool_start[], __pmalloc_pool_end[];
-static uint8_t *next_paddr = __pmalloc_pool_start;
-
-void *pmalloc(uint32_t n) {
-    uint8_t *paddr = next_paddr;
-    next_paddr += n * PAGE_SIZE;
-
-    if(next_paddr > __pmalloc_pool_end)
-        PANIC("out of memory");
-
-    memset((void *)paddr, 0, n * PAGE_SIZE);
-
-    //printf("[+] pmalloc %x\n", paddr);
-
-    return paddr;    
-}
-
-void pfree(void *page) {
-    //printf("[-] pfree %x\n", page);
-    next_paddr = page;
-}
-
 extern struct task *current_task;
 
+static struct memory_zone *zone;
+
+static bool is_contiguously_free(size_t start, size_t num_pages) {
+    for(size_t i = 0; i < num_pages; i++) {
+        if (zone->pages[start + i].ref_count != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void *palloc(size_t num_pages) {
+    for (size_t start = 0; start < zone->num_pages; start++) {
+        void *paddr = zone->base + start * PAGE_SIZE;
+        if (is_contiguously_free(start, num_pages)) {
+            // 空いているので各物理ページを割り当てる
+            for (size_t i = 0; i < num_pages; i++) {
+                struct page *page = &zone->pages[start + i];
+                page->ref_count = 1;
+                list_push_back(&current_task->pages, &page->link);
+            }
+            
+            memset(paddr, 0, PAGE_SIZE * num_pages);
+            return paddr;
+        }
+    }
+    WARN("kernel", "pm: run out of memory");
+    return NULL;
+}
+
+void pfree(struct page *page) {
+    if(--page->ref_count == 0);
+        list_remove(&page->link);
+}
+
+void pfree_by_list(list_t *list) {
+    LIST_FOR_EACH(page, list, struct page, link) {
+        pfree(page);
+    }
+}
+
 void *malloc(size_t size) {
-    // get current malloc_pool
-    struct malloc_pool *current_pool = &current_task->malloc_pool;
+    static uint8_t *next_paddr;
 
-    // get base addr of current page
-    struct page *current_page = LIST_CONTAINER(
-        list_tail(&current_pool->pages), 
-        struct page, 
-        link
-    );
-    uint8_t *base = current_page->base;
-    
-    uint8_t *next_ptr = current_pool->next_ptr;
+    uint8_t *heap = current_task->heap;
 
-    if(next_ptr + size >  base + PAGE_SIZE - sizeof(struct page)) {
-        // extend memory
-        struct page *new = pmalloc(1);
-        
-        //printf("[+] extend memory: new_page = %x\n", new);
-
-        list_push_back(&current_pool->pages, &new->link);
-
-        // update lcoal variables
-        base = new->base;
-        next_ptr = align_up(new->base, 0x10);
+    // init heap
+    if(!heap) {
+        heap = palloc(1);
+        current_task->heap = heap;
+        next_paddr = heap;
     }
 
-    uint8_t *ptr = next_ptr;
+    if(next_paddr + size > heap + PAGE_SIZE) {
+        // extend heap
+        heap = palloc(1);
+        current_task->heap = heap;
+        next_paddr = heap;
+    }
 
-    // update next_ptr
-    current_pool->next_ptr = align_up(next_ptr + size, 0x10);
+    void *paddr = next_paddr;
+    next_paddr = align_up(paddr + size, 0x10);
 
-    /*
-    printf(
-        "[+] alloc mem @0x%x size = %x, next_ptr = %x\n", 
-        ptr, 
-        size, 
-        current_pool->next_ptr
-    );*/
+    memset(paddr, 0, size);
 
-    memset(ptr, 0, size);
-    return ptr;
+    return paddr;
+}
+
+void init_memory(void) {
+    zone = (struct memory_zone *)__pmalloc_pool_start;
+    int num_pages = (__pmalloc_pool_end - __pmalloc_pool_start) / (sizeof(struct page) + PAGE_SIZE);
+
+    uint8_t *header_end = align_up(&zone->pages[num_pages], PAGE_SIZE);
+    int header_size = header_end - (uint8_t *)zone;
+
+    num_pages -= header_size / PAGE_SIZE;
+
+    // init memory zone
+    zone->num_pages = num_pages;
+    zone->base = header_end;
 }

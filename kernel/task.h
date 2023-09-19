@@ -27,10 +27,10 @@ struct task {
     bool                    destroyed;
 
     struct arch_task        arch;
-    struct malloc_pool      malloc_pool;
-    
-    void                    *page_top;
 
+    list_t                  pages;
+    void                    *heap;
+    
     list_elem_t             next;
     list_elem_t             waitqueue_next;
     list_t                  senders;

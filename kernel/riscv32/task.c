@@ -65,7 +65,7 @@ static void arch_vm_entry(void) {
 
 // allocate kernel stack only.
 void arch_init_idle_task(struct task *task) {
-    uint32_t stack_bottom = (uint32_t)pmalloc(1);
+    uint32_t stack_bottom = (uint32_t)palloc(1);
     uint32_t stack_top = stack_bottom + PAGE_SIZE;
 
     uint32_t *sp = (uint32_t *)stack_top;
@@ -79,7 +79,7 @@ void arch_init_idle_task(struct task *task) {
 
 void arch_vm_init(struct task *task, void *image, int size) {
     // todo: define paddr_t
-    uint32_t stack_bottom = (uint32_t)pmalloc(1);
+    uint32_t stack_bottom = (uint32_t)palloc(1);
     uint32_t stack_top = stack_bottom + PAGE_SIZE;
 
     uint32_t *sp = (uint32_t *)stack_top;

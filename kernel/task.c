@@ -25,14 +25,15 @@ static int alloc_tid(void) {
 }
 
 static void vm_init(struct task *task, const char *name, int tid, void *image, int size) {
-    // init malloc_pool
-    // In the current implementation, the top of the page is used as the header.
-    LIST_INIT(&task->malloc_pool.pages);
-    struct page *page = pmalloc(1);
-    task->page_top = page;
-    list_push_back(&task->malloc_pool.pages, &page->link);
-    task->malloc_pool.next_ptr = align_up(page->base, 0x10);
-   
+    // init lists
+    LIST_INIT(&task->pages);
+    LIST_INIT(&task->senders);
+    
+    list_elem_init(&task->next);
+    list_elem_init(&task->waitqueue_next);
+
+    task->heap = NULL;
+
     // init stack
     arch_vm_init(task, image, size);
 
@@ -41,11 +42,6 @@ static void vm_init(struct task *task, const char *name, int tid, void *image, i
 
     // set tid
     task->tid = tid;
-
-    // init lists
-    LIST_INIT(&task->senders);
-    list_elem_init(&task->next);
-    list_elem_init(&task->waitqueue_next);
 }
 
 void task_resume(struct task *task) {
@@ -101,18 +97,29 @@ struct task *schedule(void) {
 // create idle task
 void task_init(void) {
     int tid = alloc_tid();
-
     idle_task = &tasks[tid - 1];
+    
+    current_task = idle_task;
+
+    idle_task->heap = NULL;
+
+    // init list
+    LIST_INIT(&idle_task->pages);
+    
+    // init stack
     arch_init_idle_task(idle_task);
+
+    // set state
     idle_task->state = TASK_RUNNABLE;
 
-    current_task = idle_task;
+    // set tid
+    idle_task->tid = tid;
 }
 
 void task_switch(void) {
     struct task *prev = current_task;
     struct task *next = schedule();
-
+    
     if(prev == next)
         return;
     
@@ -166,7 +173,8 @@ int task_destroy(int tid) {
     }
 
     // free memory
-    pfree(task->page_top);
+    pfree_by_list(&task->pages);
+    task->heap = NULL;
 
     // set state
     task->state = TASK_UNUSED;

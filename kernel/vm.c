@@ -786,7 +786,7 @@ struct context *create_context(module *m) {
     struct context *ctx = malloc(sizeof(struct context) + sizeof(struct wasm_func *) * num_funcs);
 
     // create stack: 1 page for mow
-    uint8_t *buf = pmalloc(1);
+    uint8_t *buf = palloc(1);
     ctx->stack = newstack(buf, 4096);
 
     // inti call stack
@@ -819,7 +819,7 @@ struct context *create_context(module *m) {
     // create mem if memsec is defined
     if(m->memsec) {
         mem *mem = m->memsec->mems.x[0];
-        uint8_t *page = pmalloc(WASM_PAGE_SIZE * mem->mt.min / PAGE_SIZE);
+        uint8_t *page = palloc(WASM_PAGE_SIZE * mem->mt.min / PAGE_SIZE);
         ctx->mem = newbuffer(page, WASM_PAGE_SIZE * mem->mt.min);
         
         // init mem if datasec is defined

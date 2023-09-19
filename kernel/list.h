@@ -21,9 +21,11 @@ typedef struct list list_elem_t;
     (elem == NULL ? NULL :(container *) ((uintptr_t) (elem) - offsetof(container, field)))
 
 #define LIST_FOR_EACH(elem, list, container, field)                                         \
-    for (container *elem = LIST_CONTAINER((list)->next, container, field);                  \
-        &elem->field != (list);                                                             \
-        elem = LIST_CONTAINER(elem->field.next, container, field))
+    for (container *elem = LIST_CONTAINER((list)->next, container, field),                  \
+                   *__next = NULL;                                                          \
+         (&elem->field != (list)                                                            \
+          && (__next = LIST_CONTAINER(elem->field.next, container, field)));                \
+         elem = __next)
 
 #define LIST_POP_TAIL(list, container, field)                                               \
     ({                                                                                      \

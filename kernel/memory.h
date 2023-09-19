@@ -12,14 +12,17 @@
 
 struct page {
     list_elem_t link;
-    uint8_t     base[];
+    int ref_count;
 };
 
-struct malloc_pool {
-    list_t  pages;
-    uint8_t *next_ptr;
+struct memory_zone {
+    int     num_pages;
+    void    *base;
+    struct  page pages[];
 };
 
-void *pmalloc(uint32_t n);
-void pfree(void *page);
+void *palloc(size_t num_pages);
+void pfree(struct page *page);
+void pfree_by_list(list_t *list);
 void *malloc(size_t size);
+void init_memory(void);
