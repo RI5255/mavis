@@ -16,7 +16,7 @@ struct page {
 };
 
 struct memory_zone {
-    int     num_pages;
+    size_t  num_pages;
     void    *base;
     struct  page pages[];
 };

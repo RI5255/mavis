@@ -39,7 +39,7 @@ void *palloc(size_t num_pages) {
 }
 
 void pfree(struct page *page) {
-    if(--page->ref_count == 0);
+    if(--page->ref_count == 0)
         list_remove(&page->link);
 }
 
@@ -80,7 +80,7 @@ void init_memory(void) {
     zone = (struct memory_zone *)__pmalloc_pool_start;
     int num_pages = (__pmalloc_pool_end - __pmalloc_pool_start) / (sizeof(struct page) + PAGE_SIZE);
 
-    uint8_t *header_end = align_up(&zone->pages[num_pages], PAGE_SIZE);
+    uint8_t *header_end = (uint8_t *)align_up(&zone->pages[num_pages], PAGE_SIZE);
     int header_size = header_end - (uint8_t *)zone;
 
     num_pages -= header_size / PAGE_SIZE;
