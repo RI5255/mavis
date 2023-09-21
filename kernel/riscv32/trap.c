@@ -150,10 +150,11 @@ void riscv32_handle_trap(trap_frame *f) {
     uint32_t mepc = READ_CSR(mepc);
 
     switch(mcause) {
+        /*
         case TIMER_INTERRUPT:
             handle_timer_interrupt();
             break;
-        
+        */
         default:
             PANIC(
                 "unexpected trap mcause=%x, mtval=%x, mepc=%x\n", 
@@ -167,7 +168,7 @@ void riscv32_handle_trap(trap_frame *f) {
 
 void arch_set_trap_handlers(void) {
     WRITE_CSR(mtvec, (uint32_t) trap_entry);
-
+    /*
     // set interval
     *(uint32_t *)REG_MTIMECMP = INTERVAL;
 
@@ -176,5 +177,5 @@ void arch_set_trap_handlers(void) {
 
     // enale interrupt
     WRITE_CSR(mstatus, MSTATUS_MIE);
-
+    */
 }

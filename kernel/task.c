@@ -122,10 +122,11 @@ void task_switch(void) {
     if(prev == next)
         return;
     
+    /*
     // push back to runqueue
     if(prev->state == TASK_RUNNABLE && prev != idle_task && !prev->destroyed) {
         list_push_back(&runqueue, &prev->next);
-    }
+    }*/
 
     current_task = next;
     arch_task_switch(prev, next);
