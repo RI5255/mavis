@@ -6,18 +6,18 @@ MKDIR := mkdir
 CP := cp
 RM := rm
 OBJCOPY  := llvm-objcopy
-QEMU := qemu-system-riscv32
-WAT2WASM := wat2wasm
 
 # build settings
 TOP_DIR := $(shell pwd)
-ARCH := riscv32
+ARCH ?= riscv64
 BUILD_DIR ?= $(TOP_DIR)/build
 
 kernel_elf = $(BUILD_DIR)/kernel.elf
 
+QEMU := qemu-system-$(ARCH)
+
 # flags
-CFLAGS :=-std=c11 -O2 -g3 -Wall -Wextra --target=riscv32 -ffreestanding -nostdlib
+CFLAGS :=-std=c11 -O2 -g3 -Wall -Wextra --target=$(ARCH) -mcmodel=medany -ffreestanding -nostdlib -static
 CFLAGS += -I$(TOP_DIR)
 CFLAGS += -Ikernel/$(ARCH)/include
 QEMUFLAGS := -machine virt -bios none -nographic -serial mon:stdio --no-reboot
@@ -36,7 +36,7 @@ libc := $(BUILD_DIR)/lib/libc/libc.a
 
 .PHONY: libc
 libc: 
-	build_dir=$(BUILD_DIR)/lib/libc make libc -B -C lib/libc
+	build_dir=$(BUILD_DIR)/lib/libc ARCH=$(ARCH) make libc -B -C lib/libc
 
 # rules for building kernel
 linker_script := $(BUILD_DIR)/kernel/kernel.ld
@@ -67,15 +67,15 @@ wasm-libc:
 # rulues for building servers
 .PHONY: hello
 hello:
-	build_dir=$(BUILD_DIR)/servers/hello libc=$(libc) include=$(TOP_DIR) make build -C servers/hello
+	build_dir=$(BUILD_DIR)/servers/hello libc=$(libc) include=$(TOP_DIR) ARCH=$(ARCH) make build -C servers/hello
 
 .PHONY: shell
 shell:
-	build_dir=$(BUILD_DIR)/servers/shell libc=$(libc) include=$(TOP_DIR) make build -C servers/shell
+	build_dir=$(BUILD_DIR)/servers/shell libc=$(libc) include=$(TOP_DIR) ARCH=$(ARCH) make build -C servers/shell
 
 .PHONY: vm
 vm:
-	build_dir=$(BUILD_DIR)/servers/vm libc=$(libc) include=$(TOP_DIR) make build -C servers/vm
+	build_dir=$(BUILD_DIR)/servers/vm libc=$(libc) include=$(TOP_DIR) ARCH=$(ARCH) make build -C servers/vm
 
 image_path = $(BUILD_DIR)/fs/image
 
@@ -89,7 +89,7 @@ $(image_path):
 
 .PHONY: fs
 fs: image
-	build_dir=$(BUILD_DIR)/servers/fs libc=$(libc) include=$(TOP_DIR) image_path=$(image_path) make build -C servers/fs
+	build_dir=$(BUILD_DIR)/servers/fs libc=$(libc) include=$(TOP_DIR) image_path=$(image_path) ARCH=$(ARCH) make build -C servers/fs
 
 .PHONY: servers
 servers: wasm-libc

@@ -10,7 +10,7 @@ wasm-libc: build
 
 .PHONY: libc
 libc: CC := clang
-libc: CFLAGS += -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32 -ffreestanding
+libc: CFLAGS += -std=c11 -O2 -g3 -Wall -Wextra -mcmodel=medany --target=$(ARCH) -ffreestanding
 libc: build
 
 .PHONY: build

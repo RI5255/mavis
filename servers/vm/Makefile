@@ -19,4 +19,4 @@ $(wasm): main.c
 $(obj): $(wasm) 
 $(obj): main.S
 	$(MKDIR) -p $(@D)
-	$(CC) -D__wasm_path__='"$(wasm)"' --target=riscv32 -c -o $@ $<
+	$(CC) -D__wasm_path__='"$(wasm)"' --target=$(ARCH) -c -o $@ $<
