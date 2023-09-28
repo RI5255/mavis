@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "segment.h"
+#include "interrupt.h"
 
 extern uint8_t __stack_top[];
 
@@ -19,6 +20,7 @@ void boot(void) {
 
 void kernel_main(void) {
     init_segment();
+    init_idt();
 
     for(;;)
         __asm__ __volatile("hlt");

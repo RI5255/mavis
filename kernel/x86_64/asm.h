@@ -8,3 +8,4 @@
 
 void load_gdt(uint16_t limit, uint64_t offset);
 void set_cs(uint16_t cs);
+void load_idt(uint16_t limit, uint64_t offset);

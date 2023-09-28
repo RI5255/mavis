@@ -25,3 +25,14 @@ set_cs:
 .L0:
     leave 
     ret
+
+# void load_idt(uint16_t limit, uint64_t offset)
+.global load_idt
+load_idt:
+    push rbp
+    mov rbp, rsp
+    push rsi 
+    push di 
+    lidt [rsp]
+    leave 
+    ret 
