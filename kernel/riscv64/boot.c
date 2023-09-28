@@ -16,8 +16,17 @@ void boot(void) {
         // prepare kernel stack
         "mv sp, %[stack_top]\n"
         // jump to kernel_main
-        "j kernel_main\n"
+        "j arch_boot\n"
         :
         : [stack_top] "r" (__stack_top)
     );
+}
+
+// architecture-dependent boot process
+void arch_boot(void) {
+    // set up trap handlers
+    arch_set_trap_handlers();
+
+    // jump to kernel_main
+    __asm__ __volatile__ ("j kernel_main");
 }

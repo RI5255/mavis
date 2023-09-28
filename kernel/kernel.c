@@ -12,9 +12,7 @@ extern struct task *current_task;
 
 void kernel_main(void) {
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
-
-    arch_set_trap_handlers();
-
+    
     init_memory();
     
     // create idle task(kernel_main itself)

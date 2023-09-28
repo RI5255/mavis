@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "trap.h"
+
 /*
 boot.c defines the boot function, which is the entry point of the kernel.
 __stack_top is defined in the linker script of kernel. see kernel/kernel.ld
@@ -16,8 +18,17 @@ void boot(void) {
         // prepare kernel stack
         "mv sp, %[stack_top]\n"
         // jump to kernel_main
-        "j kernel_main\n"
+        "j arch_boot\n"
         :
         : [stack_top] "r" (__stack_top)
     );
+}
+
+// architecture-dependent boot process
+void arch_boot(void) {
+    // set up trap handlers
+    arch_set_trap_handlers();
+
+    // jump to kernel_main
+    __asm__ __volatile__ ("j kernel_main");
 }
