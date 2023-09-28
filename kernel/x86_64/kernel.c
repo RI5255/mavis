@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "segment.h"
+
 extern uint8_t __stack_top[];
 
 __attribute__((section(".text.boot")))
@@ -16,5 +18,9 @@ void boot(void) {
 }
 
 void kernel_main(void) {
-    for(;;);
+    init_segment();
+
+    for(;;)
+        __asm__ __volatile("hlt");
+
 }
