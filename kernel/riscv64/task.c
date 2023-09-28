@@ -49,9 +49,6 @@ void arch_task_switch(struct task *prev, struct task *next) {
 // launch_vm_task is defined in kernel/task.c
 __attribute__((naked))
 static void arch_vm_entry(void) {
-    // enable interrupt
-    CSRRS(mstatus, MSTATUS_MIE);
-
     __asm__ __volatile__(        
         "ld a0, 0 * 8(sp)\n"
         "ld a1, 1 * 8(sp)\n"
