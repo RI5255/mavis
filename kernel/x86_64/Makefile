@@ -8,7 +8,7 @@ QEMU := qemu-system-x86_64
 
 EFIINC := /usr/local/include/efi
 CFLAGS := 	-std=c11 -O2 -Wall -Wextra -fPIE -ffreestanding \
-			-fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args \
+			-fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -DEFI_DEBUG \
 			-I$(EFIINC)
 
 LIB_PATH := /usr/local/lib

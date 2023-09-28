@@ -48,7 +48,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         &desc_size,
         &desc_version
     );
-    DBGASSERT(map != NULL);
+    ASSERT(map != NULL);
 
     Print(L"Type PhysicalStart NumberOfPages Attribute\n");
     for(UINTN i = 0 ; i < num_entry; i++) {
@@ -72,10 +72,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         NULL,
         EFI_OPEN_PROTOCOL_GET_PROTOCOL
     );
-    DBGASSERT(!EFI_ERROR(status));
+    ASSERT(!EFI_ERROR(status));
 
     EFI_FILE_HANDLE root = LibOpenRoot(lip->DeviceHandle);
-    DBGASSERT(root != NULL);
+    ASSERT(root != NULL);
 
     // open file
     EFI_FILE_HANDLE fhandle;
@@ -83,7 +83,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         root->Open,
         5, root, &fhandle, L"kernel.elf", EFI_FILE_MODE_READ, 0
     );
-    DBGASSERT(!EFI_ERROR(status));
+    ASSERT(!EFI_ERROR(status));
 
     // get file size
     EFI_FILE_INFO *info = LibFileInfo(fhandle);
@@ -92,7 +92,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
     // allocate pool
     Elf64_Ehdr *ehdr = AllocatePool(fsize);
-    DBGASSERT(ehdr != NULL);
+    ASSERT(ehdr != NULL);
     
     // read file
     status = uefi_call_wrapper(
@@ -100,8 +100,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         fhandle, 
         &fsize, 
         ehdr
-    )
-    DBGASSERT(!EFI_ERROR(status));
+    );
+    ASSERT(!EFI_ERROR(status));
     //DumpHex(4, 0, fsize, ehdr);
 
     // calcurate address range
@@ -120,9 +120,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     }
 
     EFI_PHYSICAL_ADDRESS base = 0x100000;
-
+    
     // allocate pool
     UINTN num_pages = align_up(end - start, 0x1000) / 0x1000;
+    Print(L"start = %x, end = %x, num_pages = %x\n", start, end, num_pages);
 
     status = uefi_call_wrapper(
         BS->AllocatePages, 4, 
@@ -131,7 +132,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         num_pages,
         &base
     );
-    DBGASSERT(!EFI_ERROR(status));
+    ASSERT(!EFI_ERROR(status));
+    Print(L"base = %x\n", base);
 
     // init
     ZeroMem((VOID *)base, num_pages);
@@ -152,6 +154,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     // get entry point
     typedef void entry_t (void);
     entry_t *e_entry = (entry_t *)ehdr->e_entry;
+    Print(L"entry = %x\n", e_entry);
 
     // free pool
     FreePool(ehdr);
@@ -168,8 +171,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         ImageHandle,
         map_key
     );
-    DBGASSERT(!EFI_ERROR(status));
-
+    ASSERT(!EFI_ERROR(status));
+    
     // jmp to entry
     __asm__ __volatile__ ("jmp %0\n" :: "r"(e_entry));
 
