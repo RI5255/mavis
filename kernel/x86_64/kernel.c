@@ -12,6 +12,10 @@ void boot(void) {
     __asm__ __volatile__(
         // prepare kernel stack
         "mov rsp, %[stack_top]\n"
+
+        "call init_segment\n"
+        "call init_idt\n"
+
         // jump to kernel_main
         "jmp kernel_main\n"
         :
@@ -32,9 +36,6 @@ void puts(const char *s) {
 
 void kernel_main(void) {
     puts("Hello, Kernel!");
-    
-    init_segment();
-    init_idt();
 
     for(;;)
         __asm__ __volatile("hlt");

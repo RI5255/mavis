@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 struct interrupt_descriptor {
-    uint16_t    offset_low;
+    uint16_t                offset_low;
     struct segment_selector segment_selector;
 
     struct {
