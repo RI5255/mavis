@@ -28,7 +28,7 @@ build: boot-uefi.efi kernel.elf
 
 kernel.elf: CC := clang
 kernel.elf: CFLAGS := -std=c11 -O2 -g3 -Wall -Wextra --target=x86_64-elf -ffreestanding -nostdlib -static -masm=intel
-kernel.elf: kernel.c segment.c interrupt.c uart.c asm.S
+kernel.elf: kernel.c segment.c interrupt.c uart.c task.c asm.S
 	$(CC) $(CFLAGS) -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o $@ $^
 
 boot-uefi.o: boot-uefi.c
