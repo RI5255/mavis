@@ -24,30 +24,25 @@ OVMF_PATH := /usr/share/ovmf
 QEMU_FLAGS := -bios $(OVMF_PATH)/OVMF.fd -net none -nographic 
 
 .PHONY: build
-build: boot-uefi.efi kernel.elf
+build: loader.efi
 
-kernel.elf: CC := clang
-kernel.elf: CFLAGS := -std=c11 -O2 -g3 -Wall -Wextra --target=x86_64-elf -ffreestanding -nostdlib -static -masm=intel
-kernel.elf: kernel.c segment.c interrupt.c uart.c task.c asm.S
-	$(CC) $(CFLAGS) -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o $@ $^
-
-boot-uefi.o: boot-uefi.c
+loader.o: loader.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-boot-uefi.so: boot-uefi.o
+loader.so: loader.o
 	$(LD) $(LDFLAGS) $(LIB_PATH)/crt0-efi-x86_64.o $< -o $@ -lefi -lgnuefi
 
-boot-uefi.efi: boot-uefi.so
+loader.efi: loader.so
 	$(OBJCOPY) $(OBJCOPY_FLAGS) $< $@
 
 .PHONY: boot
 boot: build
 boot: 
 	mkdir -p fs/EFI/BOOT
-	cp boot-uefi.efi fs/EFI/BOOT/BOOTX64.EFI
-	cp kernel.elf fs/kernel.elf
+	cp loader.efi fs/EFI/BOOT/BOOTX64.EFI
+	cp ../build/kernel.elf fs/kernel.elf
 	$(QEMU) $(QEMU_FLAGS) -drive format=raw,file=fat:rw:fs
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.so *.efi *.elf *.map fs
+	rm -rf *.o *.so *.efi fs

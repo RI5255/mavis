@@ -1,12 +1,11 @@
-#include "task.h"
-
-#include <stddef.h>
-
-static struct task tasks[NUM_TASK_MAX];
+#include <arch_types.h>
+#include <kernel/task.h>
+#include <kernel/memory.h>
+#include <stdint.h>
 
 // Simply save and restore the callee-saved register
 __attribute__((naked)) 
-void switch_context(uint64_t *prev_sp, uint64_t *next_sp) {
+void arch_context_switch(uint64_t *prev_sp, uint64_t *next_sp) {
      __asm__ __volatile__(
         "push rbp\n"
         "push rbx\n"
@@ -26,19 +25,48 @@ void switch_context(uint64_t *prev_sp, uint64_t *next_sp) {
     );
 }
 
-struct task *create_task(uint64_t pc) {
-    struct task *task = NULL;
-    int i;
-    for (i = 0; i < NUM_TASK_MAX; i++) {
-        if (tasks[i].state == TASK_UNUSED) {
-            task = &tasks[i];
-            break;
-        }
-    }
+void arch_task_switch(struct task *prev, struct task *next) {
+    arch_context_switch(&prev->arch.sp, &next->arch.sp);
+}
 
-    // switch_context() で復帰できるように、スタックに呼び出し先保存レジスタを積む
-    uint64_t *sp = (uint64_t *) &task->stack[sizeof(task->stack)];
-    *--sp = (uint64_t)pc;
+// launch_vm_task is defined in kernel/task.c
+__attribute__((naked))
+static void arch_vm_entry(void) {
+    __asm__ __volatile__(        
+        "pop rdi\n"
+        "pop rsi\n"
+        "jmp launch_vm_task\n"
+
+        "l:\n"
+        "jmp l\n"
+    );
+}
+
+// allocate kernel stack only.
+void arch_init_idle_task(struct task *task) {
+    uint64_t stack_bottom = (uint64_t)palloc(1);
+    uint64_t stack_top = stack_bottom + PAGE_SIZE;
+
+    uint64_t *sp = (uint64_t *)stack_top;
+
+    task->arch = (struct arch_task) {
+        .sp             = (uint64_t)sp,
+        .stack_bottom   = (uint64_t)stack_bottom,
+        .stack_top      = (uint64_t)stack_top
+    };
+}
+
+void arch_vm_init(struct task *task, void *image, int size) {
+    // todo: define paddr_t
+    uint64_t stack_bottom = (uint64_t)palloc(1);
+    uint64_t stack_top = stack_bottom + PAGE_SIZE;
+
+    uint64_t *sp = (uint64_t *)stack_top;
+    
+    *--sp = size;
+    *--sp = (uint64_t)image;
+
+    *--sp = (uint64_t)arch_vm_entry;
     *--sp = 0;
     *--sp = 0;
     *--sp = 0;
@@ -46,9 +74,9 @@ struct task *create_task(uint64_t pc) {
     *--sp = 0;
     *--sp = 0;
 
-    // 各フィールドを初期化
-    task->tid = i + 1;
-    task->state = TASK_RUNNABLE;
-    task->sp = (uint64_t) sp;
-    return task;
+    task->arch = (struct arch_task) {
+        .sp             = (uint64_t)sp,
+        .stack_bottom   = (uint64_t)stack_bottom,
+        .stack_top      = (uint64_t)stack_top
+    };
 }

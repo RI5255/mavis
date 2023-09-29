@@ -17,10 +17,16 @@ kernel_elf = $(BUILD_DIR)/kernel.elf
 QEMU := qemu-system-$(ARCH)
 
 # flags
-CFLAGS :=-std=c11 -O2 -g3 -Wall -Wextra --target=$(ARCH) -mcmodel=medany -ffreestanding -nostdlib -static
+CFLAGS :=-std=c11 -O2 -g3 -Wall -Wextra --target=$(ARCH) -mcmodel=medany -ffreestanding -nostdlib -static -fuse-ld=lld -masm=intel
 CFLAGS += -I$(TOP_DIR)
 CFLAGS += -Ikernel/$(ARCH)/include
 QEMUFLAGS := -machine virt -bios none -nographic -serial mon:stdio --no-reboot
+
+ifeq ($(ARCH),x86_64)
+	ARCH_OBJS := $(addprefix $(BUILD_DIR)/kernel/$(ARCH)/, boot.o common.o uart.o interrupt.o segment.o asm.o task.o)
+else
+	ARCH_OBJS := $(addprefix $(BUILD_DIR)/kernel/$(ARCH)/, boot.o common.o task.o trap.o uart.o)
+endif
 
 .PHONY: build
 build: servers $(kernel_elf)
@@ -46,7 +52,7 @@ $(kernel_elf): OBJS += $(addprefix $(BUILD_DIR)/servers/, shell/main.o vm/main.o
 $(kernel_elf): $(objs) $(linker_script)
 	$(CC) $(CFLAGS) -Wl,-T$(linker_script) -Wl,-Map=$(@:.elf=.map) -o $@ $(libc) $(OBJS)
 
-$(arch_obj): $(addprefix $(BUILD_DIR)/kernel/$(ARCH)/, boot.o common.o task.o trap.o uart.o)
+$(arch_obj): $(ARCH_OBJS)
 	$(MKDIR) -p $(@D)
 	$(LD) -r -o $@ $^ 
 

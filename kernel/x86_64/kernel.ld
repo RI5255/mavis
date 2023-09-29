@@ -23,6 +23,11 @@ SECTIONS {
     }
 
     . = ALIGN(16);
-    . += 128 * 1024; /* 128KB */
+    . += 4096;
     __stack_top = .;
+
+     . = ALIGN(4096);
+    __pmalloc_pool_start = .;
+    . += 64 * 1024 * 1024;
+    __pmalloc_pool_end = .;
 }
